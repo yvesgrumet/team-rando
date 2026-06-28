@@ -113,6 +113,25 @@ const MOIS3=['jan','fév','mar','avr','mai','juin','juil','aoû','sep','oct','no
 
 function todayStr(){ const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; }
 function fmtH(h){ return h ? h.replace(':','h') : ''; }   // "08:00" -> "08h00"
+// Saisie de date JJ/MM/AAAA (slashs auto) ↔ stockage ISO AAAA-MM-JJ
+function fmtDateInput(el){
+  let v=el.value.replace(/\D/g,'').slice(0,8);
+  let out=v.slice(0,2);
+  if(v.length>2) out+='/'+v.slice(2,4);
+  if(v.length>4) out+='/'+v.slice(4,8);
+  el.value=out;
+}
+function frToIso(s){
+  const m=(s||'').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(!m) return null;
+  const d=+m[1], mo=+m[2], y=+m[3];
+  if(mo<1||mo>12||d<1||d>31||y<1900||y>2100) return null;
+  return y+'-'+String(mo).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+}
+function isoToFr(iso){
+  const m=(iso||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : '';
+}
 function mmdd(d){ return d? d.slice(5,10):''; }
 function parseD(d){ return d? new Date(d+'T00:00:00') : null; }
 function fmtLong(d){ const t=parseD(d); return t? `${JOURS[t.getDay()]} ${t.getDate()} ${MOIS[t.getMonth()]} ${t.getFullYear()}`:'—'; }
@@ -298,7 +317,7 @@ function openCreerProfil(){
         <div class="fg"><label>Nom</label><input id="np-nom" placeholder="Dupont"></div>
       </div>
       <div class="frow">
-        <div class="fg"><label>Naissance</label><input type="date" id="np-naiss"></div>
+        <div class="fg"><label>Naissance</label><input id="np-naiss" inputmode="numeric" maxlength="10" placeholder="JJ/MM/AAAA" autocomplete="off" oninput="fmtDateInput(this)"></div>
         <div class="fg"><label>Téléphone</label><input type="tel" id="np-tel" placeholder="06…"></div>
       </div>
     </div>
@@ -309,8 +328,10 @@ function openCreerProfil(){
 function npPhoto(){ pickPhoto(400,d=>{ _npPhoto=d; const p=$('np-prev'); p.src=d; p.style.display='block'; }); }
 async function creerProfil(){
   const prenom=$('np-prenom').value.trim(); if(!prenom) return toast('Indique ton prénom','err');
+  const naissRaw=$('np-naiss').value.trim();
+  let naiss=null; if(naissRaw){ naiss=frToIso(naissRaw); if(!naiss) return toast('Date de naissance : format JJ/MM/AAAA','err'); }
   const first=arr(CACHE.membres).length===0;
-  const data={ prenom, nom:$('np-nom').value.trim()||null, photo:_npPhoto, date_naissance:$('np-naiss').value||null,
+  const data={ prenom, nom:$('np-nom').value.trim()||null, photo:_npPhoto, date_naissance:naiss,
     telephone:$('np-tel').value.trim()||null, isAdmin:first, createdAt:new Date().toISOString() };
   const id=await DB.push('membres',data);
   localStorage.setItem('tr_me',id); ME={id,...data};
@@ -970,14 +991,16 @@ function openEditProfil(){
       <div class="fg"><label>Nom</label><input id="ep-nom" value="${esc(ME.nom||'')}"></div>
     </div>
     <div class="frow">
-      <div class="fg"><label>Naissance</label><input type="date" id="ep-naiss" value="${ME.date_naissance||''}"></div>
+      <div class="fg"><label>Naissance</label><input id="ep-naiss" inputmode="numeric" maxlength="10" placeholder="JJ/MM/AAAA" autocomplete="off" oninput="fmtDateInput(this)" value="${isoToFr(ME.date_naissance)}"></div>
       <div class="fg"><label>Téléphone</label><input type="tel" id="ep-tel" value="${esc(ME.telephone||'')}"></div>
     </div>
     <button class="btn btn-full btn-lg" onclick="majProfil()">Enregistrer ✓</button>`);
   window.epPhoto=()=>pickPhoto(400,d=>{ photo=d; const p=$('ep-prev'); p.src=d; p.style.display='block'; });
   window.majProfil=async()=>{
+    const naissRaw=$('ep-naiss').value.trim();
+    let naiss=null; if(naissRaw){ naiss=frToIso(naissRaw); if(!naiss) return toast('Date de naissance : format JJ/MM/AAAA','err'); }
     await DB.update('membres/'+ME.id,{ prenom:$('ep-prenom').value.trim()||ME.prenom, nom:$('ep-nom').value.trim()||null,
-      date_naissance:$('ep-naiss').value||null, telephone:$('ep-tel').value.trim()||null, photo });
+      date_naissance:naiss, telephone:$('ep-tel').value.trim()||null, photo });
     toast('Profil mis à jour ✓'); closeModalNow();
   };
 }
@@ -1005,6 +1028,7 @@ async function promo(id){ await DB.update('membres/'+id,{isAdmin:true}); toast('
 window.submitPw=submitPw; window.navigate=navigate; window.closeModal=closeModal;
 window.choisirProfil=choisirProfil; window.openCreerProfil=openCreerProfil;
 window.showPicker=showPicker; window.npPhoto=npPhoto; window.creerProfil=creerProfil;
+window.fmtDateInput=fmtDateInput;
 window.reglerTeamPhoto=reglerTeamPhoto;
 window.openSortie=openSortie; window.openCreerSortie=openCreerSortie; window.creerSortie=creerSortie;
 window.addPhotosToSortie=addPhotosToSortie; window.openPhoto=openPhoto; window.deletePhoto=deletePhoto;
