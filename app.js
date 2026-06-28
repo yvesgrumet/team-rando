@@ -8,6 +8,7 @@ let appReady = false;
 let METEO = null;
 
 const NANTUA = { lat:46.152, lon:5.609 };
+const VAPID_PUBLIC = 'BCD75gHfv6xGXA6HpWVZTKmaj9oMwvfqgNMeJmnim9yEMP155WLfLQ5VjSRM6mZmeZLRjVDEDCxaYndnB5PLs78';
 
 /* ───────── Catalogue de vraies randos ≤ 2h30 de Nantua (pré-chargé) ───────── */
 const SEED_RANDOS = [
@@ -343,6 +344,8 @@ function enterApp(){
   navigate('home');
   if(METEO===null) loadMeteo();
   startPresence();
+  if(pushSupported() && Notification.permission==='granted') enableNotifs(true); // rafraîchit l'abonnement
+  clearNotifs();
   // init "déjà vu" pour ne pas notifier l'historique au démarrage
   lastMsgKnown = (msgsArr().slice(-1)[0]||{}).id || '';
   lastSortieKnown = (arr(CACHE.sorties).sort((a,b)=>(a.createdAt||'').localeCompare(b.createdAt||'')).slice(-1)[0]||{}).id || '';
@@ -488,6 +491,7 @@ async function creerSortie(){
     randoId:null, titre:$('cs-titre').value.trim()||null, vu:{[ME.id]:true},
     organisateurId:ME.id, notes:$('cs-notes').value.trim()||null, statut:'planifiee', createdAt:new Date().toISOString() });
   await DB.push('participations',{ sortieId:id, membreId:ME.id, createdAt:new Date().toISOString() });
+  pushNotifyOthers('📅 Nouvelle sortie', (ME.prenom||'Quelqu\'un')+' propose une sortie le '+fmtShort(date), '/');
   closeModalNow(); toast('Sortie créée ! 🎉'); navigate('sorties');
 }
 
@@ -833,7 +837,7 @@ function startPresence(){
   beat();
   clearInterval(presenceTimer);
   presenceTimer=setInterval(beat,45000);
-  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){ beat(); if(appReady){ renderView(CURRENT); updateBadges(); } } });
+  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){ beat(); clearNotifs(); if(appReady){ renderView(CURRENT); updateBadges(); } } });
 }
 
 /* ── Vue Messages ── */
@@ -873,8 +877,9 @@ function msgBubble(m){
 }
 async function sendMessage(){
   const inp=$('msg-input'); if(!inp) return; const t=inp.value.trim(); if(!t) return;
-  inp.value=''; requestNotifPerm();
+  inp.value=''; maybeEnableNotifs();
   await DB.push('messages',{ membreId:ME.id, texte:t, createdAt:new Date().toISOString(), vu:{[ME.id]:true} });
+  pushNotifyOthers('💬 '+(ME.prenom||'Team Rando'), t.slice(0,140), '/');
 }
 async function supprMessage(id){
   if(!confirm('Supprimer ce message ?')) return;
@@ -893,6 +898,50 @@ function requestNotifPerm(){
 }
 function notify(title,body){
   try{ if('Notification' in window && Notification.permission==='granted') new Notification(title,{body:body,icon:'icon-192.png'}); }catch(e){}
+}
+
+/* ── Notifications PUSH (même appli fermée) ── */
+function urlB64ToUint8(base64){
+  const pad='='.repeat((4-base64.length%4)%4);
+  const b=(base64+pad).replace(/-/g,'+').replace(/_/g,'/');
+  const raw=atob(b); const arr=new Uint8Array(raw.length);
+  for(let i=0;i<raw.length;i++) arr[i]=raw.charCodeAt(i);
+  return arr;
+}
+function pushSupported(){ return ('Notification' in window) && ('serviceWorker' in navigator) && ('PushManager' in window); }
+async function enableNotifs(silent){
+  if(!pushSupported()){ if(!silent) toast('Notifications non gérées par cet appareil','err'); return false; }
+  try{
+    const perm = await Notification.requestPermission();
+    if(perm!=='granted'){ if(!silent) toast('Notifications refusées'); return false; }
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if(!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey: urlB64ToUint8(VAPID_PUBLIC) });
+    if(ME) await DB.set('pushSubs/'+ME.id, sub.toJSON());
+    if(!silent){ toast('Notifications activées 🔔'); if(appReady&&CURRENT==='reglages') renderReglages(); }
+    return true;
+  }catch(e){ console.error('enableNotifs',e); if(!silent) toast('Activation impossible','err'); return false; }
+}
+function maybeEnableNotifs(){ if(pushSupported() && Notification.permission==='default') enableNotifs(true); }
+async function pushNotifyOthers(title, body, url){
+  try{
+    const subsObj = await DB.get('pushSubs') || {};
+    const subs = Object.entries(subsObj).filter(([id])=>id!==(ME&&ME.id)).map(([,s])=>s);
+    if(!subs.length) return;
+    await fetch('/api/notify', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ subs, title, body, url: url||'/' }) });
+  }catch(e){ console.warn('push KO', e); }
+}
+async function clearNotifs(){
+  try{ const reg=await navigator.serviceWorker.ready; (await reg.getNotifications()).forEach(n=>n.close()); }catch(e){}
+  if('clearAppBadge' in navigator) navigator.clearAppBadge().catch(()=>{});
+}
+function notifStatusHtml(){
+  if(!pushSupported()) return '<p class="mini-note" style="text-align:left;padding:0">Non géré ici. Sur iPhone : installe d\'abord l\'appli sur l\'écran d\'accueil, puis rouvre-la depuis l\'icône.</p>';
+  const p=Notification.permission;
+  if(p==='granted') return '<div class="btn btn-soft btn-full btn-sm" style="cursor:default">✅ Notifications activées</div>';
+  if(p==='denied')  return '<p class="mini-note" style="text-align:left;padding:0">⛔ Bloquées. Autorise les notifications dans les réglages de ton téléphone, puis reviens.</p>';
+  return '<button class="btn btn-full btn-sm" onclick="enableNotifs()">🔔 Activer les notifications</button>';
 }
 function onMessagesChange(){
   if(!appReady||!ME){ return; }
@@ -961,6 +1010,11 @@ function renderReglages(){
       <button class="btn btn-soft btn-full btn-sm" style="margin-bottom:8px" onclick="openCodeGroupe()">🔑 Changer le code du groupe</button>
       <button class="btn btn-soft btn-full btn-sm" onclick="openGestionMembres()">👥 Gérer les membres</button>
     </div>`:''}
+    <div class="card">
+      <div class="card-t">🔔 Notifications</div>
+      <p class="mini-note" style="text-align:left;padding:0 0 10px">Être prévenu d'un nouveau message ou d'une nouvelle sortie, même quand l'appli est fermée.</p>
+      ${notifStatusHtml()}
+    </div>
     <div class="card">
       <div class="card-t">📲 Installer l'appli</div>
       <p class="mini-note" style="text-align:left;padding:0">
@@ -1042,6 +1096,7 @@ window.openMarquerFaite=openMarquerFaite; window.marquerFaite=marquerFaite; wind
 window.openEditProfil=openEditProfil; window.openCodeGroupe=openCodeGroupe; window.openGestionMembres=openGestionMembres;
 window.supprMembre=supprMembre; window.promo=promo; window.changerProfil=changerProfil;
 window.sendMessage=sendMessage; window.supprMessage=supprMessage; window.quickToggleFaite=quickToggleFaite;
+window.enableNotifs=enableNotifs;
 
 if(window.__DB_READY) boot();
 else window.addEventListener('db-ready', boot);
