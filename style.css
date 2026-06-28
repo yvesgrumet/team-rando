@@ -269,6 +269,12 @@ h1,h2,h3,.fred{font-family:'Fredoka',sans-serif;font-weight:600;}
 .mini-note{font-size:12.5px;color:var(--muted);font-weight:700;text-align:center;padding:10px 16px;line-height:1.5}
 .badge-mode{display:inline-block;font-size:11px;font-weight:800;padding:3px 9px;border-radius:10px;background:#fef3c7;color:#92400e;margin-left:6px}
 
+/* ── ALBUM PHOTOS ── */
+.gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.gthumb{aspect-ratio:1;border-radius:11px;overflow:hidden;cursor:pointer;background:#dbeafe;-webkit-tap-highlight-color:transparent}
+.gthumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .15s}
+.gthumb:active img{transform:scale(.95)}
+
 /* ── MESSAGERIE ── */
 .msg-list{padding:14px 12px 86px;display:flex;flex-direction:column;gap:10px;min-height:calc(100dvh - 230px)}
 .msg-row{display:flex;align-items:flex-end;gap:8px;max-width:85%}

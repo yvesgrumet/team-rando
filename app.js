@@ -167,19 +167,26 @@ function randoChips(r){
 }
 
 /* ════════════════════════════════  PHOTO  ════════════════════════════════ */
-function pickPhoto(maxSize, cb){
-  const inp=$('photo-input'); inp.value='';
-  inp.onchange=e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return;
-    const rd=new FileReader();
-    rd.onload=ev=>{ const img=new Image();
-      img.onload=()=>{ let w=img.width,h=img.height;
-        if(w>maxSize||h>maxSize){ if(w>h){h=Math.round(h*maxSize/w);w=maxSize;}else{w=Math.round(w*maxSize/h);h=maxSize;} }
-        const c=document.createElement('canvas'); c.width=w;c.height=h;
-        c.getContext('2d').drawImage(img,0,0,w,h);
-        cb(c.toDataURL('image/jpeg',0.72));
-      }; img.src=ev.target.result;
-    }; rd.readAsDataURL(f);
-  };
+function compressFile(file, maxSize, cb, quality){
+  quality=quality||0.72;
+  const rd=new FileReader();
+  rd.onload=ev=>{ const img=new Image();
+    img.onload=()=>{ let w=img.width,h=img.height;
+      if(w>maxSize||h>maxSize){ if(w>h){h=Math.round(h*maxSize/w);w=maxSize;}else{w=Math.round(w*maxSize/h);h=maxSize;} }
+      const c=document.createElement('canvas'); c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      cb(c.toDataURL('image/jpeg',quality));
+    }; img.src=ev.target.result;
+  }; rd.readAsDataURL(file);
+}
+function pickPhoto(maxSize, cb, quality){
+  const inp=$('photo-input'); inp.value=''; inp.multiple=false;
+  inp.onchange=e=>{ const f=e.target.files&&e.target.files[0]; if(f) compressFile(f,maxSize,cb,quality); };
+  inp.click();
+}
+function pickPhotos(maxSize, cb, quality){
+  const inp=$('photo-input'); inp.value=''; inp.multiple=true;
+  inp.onchange=e=>{ const files=[...(e.target.files||[])]; inp.multiple=false; files.forEach(f=>compressFile(f,maxSize,cb,quality)); };
   inp.click();
 }
 
@@ -421,6 +428,7 @@ function sortieCard(s){
           ${s.heure?`<span class="chip chip-sun">🚗 ${fmtH(s.heure)}</span>`:''}
           ${iJoin(s.id)?'<span class="chip chip-green">✓ Je viens</span>':''}
           <span class="chip">👥 ${np}</span>
+          ${s.nbPhotos?`<span class="chip">📷 ${s.nbPhotos}</span>`:''}
           ${r&&r.temps_voiture_min!=null?`<span class="chip chip-sky">⏱️ ${r.temps_voiture_min} min route</span>`:''}
           ${!r?'<span class="chip chip-sun">💡 rando à définir</span>':''}
         </div>
@@ -485,12 +493,59 @@ function openSortie(id){
     ${s.notes?`<div class="card" style="margin:0 0 12px"><div class="card-t">ℹ️ Infos</div>${esc(s.notes)}</div>`:''}
     <div class="card-t" style="padding:0 0 4px">👥 Participants (${parts.length})</div>
     <div style="margin-bottom:14px">${partHtml}</div>
+    <div class="card" style="margin:0 0 14px">
+      <div class="card-t" style="font-size:15px">📷 Album photos${s.nbPhotos?` (${s.nbPhotos})`:''}</div>
+      <div id="gallery-grid" class="gallery-grid"><div class="mini-note" style="text-align:left;padding:4px 0">Chargement…</div></div>
+      <button class="btn btn-soft btn-full btn-sm" style="margin-top:10px" onclick="addPhotosToSortie('${id}')">➕ Ajouter des photos</button>
+    </div>
     <div class="chips" style="gap:8px">
       ${iJoin(id)?(s.organisateurId===ME.id?'':`<button class="btn btn-danger btn-sm" onclick="quitterSortie('${id}')">Me désinscrire</button>`):`<button class="btn btn-sm" onclick="rejoindreSortie('${id}')">✓ Je viens !</button>`}
       <button class="btn btn-soft btn-sm" onclick="openSuggestions('${id}')">💡 Suggestions rando</button>
       ${isOrga?`<button class="btn btn-ghost btn-sm" onclick="openEditSortie('${id}')">✏️ Modifier</button>`:''}
       ${isOrga?`<button class="btn btn-danger btn-sm" onclick="supprSortie('${id}')">🗑️</button>`:''}
     </div>`);
+  renderGallery(id);
+}
+
+/* ── Album photos d'une sortie (chargé à la demande, stockage Firebase) ── */
+let GAL={};
+async function renderGallery(sid){
+  const g=$('gallery-grid'); if(!g) return;
+  let data={};
+  try{ data=await DB.get('galleries/'+sid)||{}; }catch(e){}
+  const photos=Object.entries(data).map(([pid,p])=>({pid,...p})).sort((a,b)=>(a.at||'').localeCompare(b.at||''));
+  GAL[sid]=photos;
+  if(!$('gallery-grid')) return; // l'utilisateur a peut-être fermé/changé de vue
+  // auto-correction du compteur affiché sur les cartes
+  const s=getS(sid); if(s && (s.nbPhotos||0)!==photos.length) DB.update('sorties/'+sid,{nbPhotos:photos.length});
+  $('gallery-grid').innerHTML = photos.length
+    ? photos.map(p=>`<div class="gthumb" onclick="openPhoto('${sid}','${p.pid}')"><img src="${p.img}" alt="" loading="lazy"></div>`).join('')
+    : '<div class="mini-note" style="text-align:left;padding:4px 0">Aucune photo. Ajoutez les premières souvenirs ! 📸</div>';
+}
+function addPhotosToSortie(sid){
+  pickPhotos(1280, async (dataUrl)=>{
+    try{
+      await DB.push('galleries/'+sid,{img:dataUrl, by:ME.id, at:new Date().toISOString()});
+      toast('Photo ajoutée 📸');
+      renderGallery(sid);
+    }catch(e){ toast('Erreur d\'envoi','err'); }
+  }, 0.55);
+}
+function openPhoto(sid,pid){
+  const p=(GAL[sid]||[]).find(x=>x.pid===pid); if(!p) return;
+  const by=getM(p.by); const canDel=(p.by===(ME&&ME.id))||(ME&&ME.isAdmin);
+  openModal(`
+    <img src="${p.img}" style="width:100%;border-radius:14px;display:block">
+    <div class="mini-note" style="text-align:left;padding:10px 0 0">📷 ${esc(by?by.prenom:'?')}${p.at?' · '+fmtShort(p.at.slice(0,10)):''}</div>
+    <div class="chips" style="margin-top:12px">
+      <button class="btn btn-ghost btn-sm" onclick="openSortie('${sid}')">← Retour à la sortie</button>
+      ${canDel?`<button class="btn btn-danger btn-sm" onclick="deletePhoto('${sid}','${pid}')">🗑️ Supprimer</button>`:''}
+    </div>`);
+}
+async function deletePhoto(sid,pid){
+  if(!confirm('Supprimer cette photo ?')) return;
+  await DB.remove('galleries/'+sid+'/'+pid);
+  toast('Photo supprimée'); openSortie(sid);
 }
 async function rejoindreSortie(id){ await DB.push('participations',{sortieId:id,membreId:ME.id,createdAt:new Date().toISOString()}); toast('Tu participes ! 🥾'); openSortie(id); }
 async function quitterSortie(id){
@@ -952,6 +1007,7 @@ window.choisirProfil=choisirProfil; window.openCreerProfil=openCreerProfil;
 window.showPicker=showPicker; window.npPhoto=npPhoto; window.creerProfil=creerProfil;
 window.reglerTeamPhoto=reglerTeamPhoto;
 window.openSortie=openSortie; window.openCreerSortie=openCreerSortie; window.creerSortie=creerSortie;
+window.addPhotosToSortie=addPhotosToSortie; window.openPhoto=openPhoto; window.deletePhoto=deletePhoto;
 window.rejoindreSortie=rejoindreSortie; window.quitterSortie=quitterSortie; window.supprSortie=supprSortie;
 window.openEditSortie=openEditSortie; window.majSortie=majSortie;
 window.openSuggestions=openSuggestions; window.filtSugg=filtSugg; window.choisirRando=choisirRando;
