@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0ea5e9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Team Rando">
+<title>Team Rando</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ░░░ Overlay MOT DE PASSE du groupe ░░░ -->
+<div id="ov-pw" class="overlay">
+  <div class="ov-card">
+    <div class="ov-emoji">🏔️</div>
+    <div class="ov-title">Team Rando</div>
+    <div class="ov-sub">Entre le code du groupe</div>
+    <input type="password" id="pw-input" class="ov-input" placeholder="••••••" autocomplete="off"
+           onkeydown="if(event.key==='Enter')submitPw()">
+    <div id="pw-err" class="ov-err">❌ Code incorrect</div>
+    <button class="btn btn-full btn-lg" style="margin-top:18px" onclick="submitPw()">Entrer ✓</button>
+  </div>
+</div>
+
+<!-- ░░░ Overlay CHOIX DU PROFIL ░░░ -->
+<div id="ov-profil" class="overlay">
+  <div class="ov-card" id="profil-card" style="max-width:420px"></div>
+</div>
+
+<div id="app" style="display:none">
+
+  <!-- ░░ ACCUEIL ░░ -->
+  <div id="view-home" class="view active"></div>
+  <!-- ░░ SORTIES ░░ -->
+  <div id="view-sorties" class="view"></div>
+  <!-- ░░ RANDOS ░░ -->
+  <div id="view-randos" class="view"></div>
+  <!-- ░░ MESSAGES ░░ -->
+  <div id="view-messages" class="view"></div>
+  <!-- ░░ MEMBRES ░░ -->
+  <div id="view-membres" class="view"></div>
+  <!-- ░░ RÉGLAGES ░░ -->
+  <div id="view-reglages" class="view"></div>
+
+  <!-- ░░ NAV ░░ -->
+  <nav class="nav">
+    <button class="nav-item active" data-v="home" onclick="navigate('home')"><span class="ic">🏠</span>Accueil</button>
+    <button class="nav-item" data-v="sorties" onclick="navigate('sorties')"><span class="ic">📅</span>Sorties<span id="nav-badge-sorties" class="nav-badge" style="display:none"></span></button>
+    <button class="nav-item" data-v="randos" onclick="navigate('randos')"><span class="ic">🥾</span>Randos</button>
+    <button class="nav-item" data-v="messages" onclick="navigate('messages')"><span class="ic">💬</span>Messages<span id="nav-badge-messages" class="nav-badge" style="display:none"></span></button>
+    <button class="nav-item" data-v="membres" onclick="navigate('membres')"><span class="ic">👥</span>La Team</button>
+    <button class="nav-item" data-v="reglages" onclick="navigate('reglages')"><span class="ic">⚙️</span>Réglages</button>
+  </nav>
+</div>
+
+<!-- ░░ MODAL ░░ -->
+<div id="modal-bg" class="modal-bg" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-grip"></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- ░░ TOAST ░░ -->
+<div id="toast"></div>
+
+<!-- Champs photo cachés (caméra ou galerie) -->
+<input type="file" id="photo-input" accept="image/*" style="display:none">
+
+<script src="firebase-config.js"></script>
+<script src="db.js"></script>
+<script defer src="app.js"></script>
+<script defer src="pwa.js"></script>
+</body>
+</html>

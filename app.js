@@ -1,0 +1,967 @@
+/* ═══════════════════════════════  TEAM RANDO  ═══════════════════════════════ */
+
+const CACHE = { config:{}, membres:{}, randos:{}, faites:{}, sorties:{}, participations:{}, messages:{}, presence:{} };
+const loaded = { config:false, randos:false, membres:false };
+let ME = null;            // { id, prenom, nom, ... }
+let CURRENT = 'home';
+let appReady = false;
+let METEO = null;
+
+const NANTUA = { lat:46.152, lon:5.609 };
+
+/* ───────── Catalogue de vraies randos ≤ 2h30 de Nantua (pré-chargé) ───────── */
+const SEED_RANDOS = [
+  // ── BUGEY (proche, 2–55 min) ──
+  {nom:"Tour du Lac de Nantua",massif:"Bugey",denivele:60,distance_km:8,duree_h:2,temps_voiture_min:2,difficulte:"Facile",paysage:"Lac",depart:"Nantua"},
+  {nom:"Belvédère & Roche de Nantua",massif:"Bugey",denivele:350,distance_km:6,duree_h:2.5,temps_voiture_min:5,difficulte:"Moyen",paysage:"Panorama",depart:"Nantua"},
+  {nom:"Cascade & Lac de Sylans",massif:"Bugey",denivele:120,distance_km:6,duree_h:2,temps_voiture_min:12,difficulte:"Facile",paysage:"Lac",depart:"Les Neyrolles"},
+  {nom:"Lac Genin",massif:"Bugey",denivele:150,distance_km:5,duree_h:1.5,temps_voiture_min:20,difficulte:"Facile",paysage:"Lac",depart:"Charix"},
+  {nom:"Plateau de Retord",massif:"Bugey",denivele:250,distance_km:9,duree_h:3,temps_voiture_min:30,difficulte:"Facile",paysage:"Plateau",depart:"Cuvéry"},
+  {nom:"Le Molard de Don",massif:"Bugey",denivele:400,distance_km:9,duree_h:3.5,temps_voiture_min:30,difficulte:"Moyen",paysage:"Panorama",depart:"Giron"},
+  {nom:"Cascade de Charabotte",massif:"Bugey",denivele:200,distance_km:7,duree_h:3,temps_voiture_min:45,difficulte:"Facile",paysage:"Cascade",depart:"Hostiaz"},
+  {nom:"Le Crêt de la Goutte & Fort l'Écluse",massif:"Bugey",denivele:450,distance_km:8,duree_h:3.5,temps_voiture_min:45,difficulte:"Moyen",paysage:"Panorama",depart:"Léaz"},
+  {nom:"Le Grand Colombier",massif:"Bugey",denivele:900,distance_km:12,duree_h:5,temps_voiture_min:50,difficulte:"Difficile",paysage:"Sommet",depart:"Virieu-le-Petit"},
+  {nom:"Réserve du Marais de Lavours",massif:"Bugey",denivele:30,distance_km:7,duree_h:2,temps_voiture_min:55,difficulte:"Facile",paysage:"Marais",depart:"Ceyzérieu"},
+  // ── HAUT-JURA (35–65 min) ──
+  {nom:"Crêt de Chalam",massif:"Haut-Jura",denivele:600,distance_km:11,duree_h:4.5,temps_voiture_min:35,difficulte:"Moyen",paysage:"Sommet",depart:"La Pesse"},
+  {nom:"La Borne au Lion",massif:"Haut-Jura",denivele:300,distance_km:9,duree_h:3,temps_voiture_min:40,difficulte:"Facile",paysage:"Forêt",depart:"La Pesse"},
+  {nom:"Le Petit Crêt d'Eau",massif:"Haut-Jura",denivele:700,distance_km:10,duree_h:4,temps_voiture_min:40,difficulte:"Moyen",paysage:"Sommet",depart:"Confort"},
+  {nom:"Crêt de la Neige (sommet du Jura, 1720 m)",massif:"Haut-Jura",denivele:900,distance_km:14,duree_h:5.5,temps_voiture_min:50,difficulte:"Difficile",paysage:"Sommet",depart:"Lélex / La Vattay"},
+  {nom:"Le Reculet",massif:"Haut-Jura",denivele:850,distance_km:13,duree_h:5,temps_voiture_min:50,difficulte:"Difficile",paysage:"Sommet",depart:"Thoiry / La Vattay"},
+  {nom:"Colomby de Gex",massif:"Haut-Jura",denivele:650,distance_km:12,duree_h:4.5,temps_voiture_min:50,difficulte:"Moyen",paysage:"Panorama",depart:"Col de la Faucille"},
+  {nom:"La Forêt du Massacre & Crêt Pela",massif:"Haut-Jura",denivele:400,distance_km:11,duree_h:4,temps_voiture_min:60,difficulte:"Moyen",paysage:"Forêt",depart:"Lajoux"},
+  {nom:"La Dôle (Suisse)",massif:"Haut-Jura",denivele:700,distance_km:12,duree_h:4.5,temps_voiture_min:60,difficulte:"Moyen",paysage:"Panorama",depart:"La Cure"},
+  {nom:"Lac & Cascades des Rousses",massif:"Haut-Jura",denivele:200,distance_km:8,duree_h:2.5,temps_voiture_min:65,difficulte:"Facile",paysage:"Lac",depart:"Les Rousses"},
+  // ── JURA des lacs (55–90 min) ──
+  {nom:"Cascades du Hérisson",massif:"Jura",denivele:300,distance_km:7,duree_h:3,temps_voiture_min:55,difficulte:"Facile",paysage:"Cascade",depart:"Ménétrux-en-Joux"},
+  {nom:"Belvédère du Regardoir (Lac de Vouglans)",massif:"Jura",denivele:200,distance_km:8,duree_h:3,temps_voiture_min:55,difficulte:"Facile",paysage:"Lac",depart:"Maisod"},
+  {nom:"Pic de l'Aigle & Lac de Bonlieu",massif:"Jura",denivele:350,distance_km:9,duree_h:3.5,temps_voiture_min:60,difficulte:"Moyen",paysage:"Panorama",depart:"Ilay"},
+  {nom:"Belvédères des 4 Lacs",massif:"Jura",denivele:250,distance_km:10,duree_h:3.5,temps_voiture_min:65,difficulte:"Facile",paysage:"Panorama",depart:"Le Frasnois"},
+  {nom:"Cirque & Reculée de Baume-les-Messieurs",massif:"Jura",denivele:350,distance_km:9,duree_h:3.5,temps_voiture_min:80,difficulte:"Moyen",paysage:"Gorges",depart:"Baume-les-Messieurs"},
+  {nom:"Cascade des Tufs",massif:"Jura",denivele:150,distance_km:6,duree_h:2.5,temps_voiture_min:85,difficulte:"Facile",paysage:"Cascade",depart:"Les Planches-près-Arbois"},
+  // ── GENEVOIS (45–60 min) ──
+  {nom:"Le Vuache",massif:"Genevois",denivele:500,distance_km:9,duree_h:3.5,temps_voiture_min:45,difficulte:"Moyen",paysage:"Forêt",depart:"Chaumont"},
+  {nom:"Le Salève",massif:"Genevois",denivele:800,distance_km:11,duree_h:4.5,temps_voiture_min:60,difficulte:"Moyen",paysage:"Panorama",depart:"Collonges-sous-Salève"},
+  // ── ANNECY (75–90 min) ──
+  {nom:"Le Semnoz",massif:"Annecy",denivele:700,distance_km:12,duree_h:4.5,temps_voiture_min:75,difficulte:"Moyen",paysage:"Panorama",depart:"Quintal"},
+  {nom:"Mont Veyrier – Mont Baron",massif:"Annecy",denivele:750,distance_km:9,duree_h:4,temps_voiture_min:75,difficulte:"Moyen",paysage:"Panorama",depart:"Annecy-le-Vieux"},
+  {nom:"Roc de Chère",massif:"Annecy",denivele:200,distance_km:7,duree_h:2.5,temps_voiture_min:80,difficulte:"Facile",paysage:"Lac",depart:"Talloires"},
+  {nom:"Le Parmelan",massif:"Annecy",denivele:750,distance_km:11,duree_h:4.5,temps_voiture_min:80,difficulte:"Moyen",paysage:"Sommet",depart:"Villaz"},
+  {nom:"Les Dents de Lanfon",massif:"Annecy",denivele:1000,distance_km:9,duree_h:5,temps_voiture_min:90,difficulte:"Difficile",paysage:"Sommet",depart:"Col des Nantets"},
+  {nom:"La Tournette",massif:"Annecy",denivele:1350,distance_km:13,duree_h:6.5,temps_voiture_min:90,difficulte:"Difficile",paysage:"Sommet",depart:"Montmin (Chalet de l'Aulp)"},
+  // ── BAUGES (85–120 min) ──
+  {nom:"Roc des Bœufs",massif:"Bauges",denivele:900,distance_km:11,duree_h:5,temps_voiture_min:85,difficulte:"Difficile",paysage:"Panorama",depart:"Le Châtelard"},
+  {nom:"Pointe de la Sambuy",massif:"Bauges",denivele:700,distance_km:8,duree_h:4,temps_voiture_min:95,difficulte:"Moyen",paysage:"Sommet",depart:"Seythenex"},
+  {nom:"Mont Colombier",massif:"Bauges",denivele:1100,distance_km:12,duree_h:6,temps_voiture_min:105,difficulte:"Difficile",paysage:"Sommet",depart:"Aillon-le-Jeune"},
+  {nom:"Mont Revard (balcon du Lac du Bourget)",massif:"Bauges",denivele:500,distance_km:10,duree_h:4,temps_voiture_min:110,difficulte:"Facile",paysage:"Panorama",depart:"Les Déserts"},
+  {nom:"La Dent de Rossanaz",massif:"Bauges",denivele:900,distance_km:9,duree_h:5,temps_voiture_min:110,difficulte:"Difficile",paysage:"Sommet",depart:"Saint-François-de-Sales"},
+  {nom:"Mont Trélod",massif:"Bauges",denivele:1300,distance_km:11,duree_h:6.5,temps_voiture_min:115,difficulte:"Difficile",paysage:"Sommet",depart:"École"},
+  {nom:"Mont d'Arcalod",massif:"Bauges",denivele:1400,distance_km:13,duree_h:7,temps_voiture_min:120,difficulte:"Très difficile",paysage:"Sommet",depart:"École"},
+  // ── ARAVIS (100–115 min) ──
+  {nom:"Le Mont Charvin",massif:"Aravis",denivele:1150,distance_km:11,duree_h:6,temps_voiture_min:100,difficulte:"Difficile",paysage:"Sommet",depart:"Le Bouchet-Mont-Charvin"},
+  {nom:"Lac de Tardevant",massif:"Aravis",denivele:850,distance_km:10,duree_h:4.5,temps_voiture_min:105,difficulte:"Moyen",paysage:"Lac",depart:"La Clusaz (Les Confins)"},
+  {nom:"Lac de Lessy",massif:"Aravis",denivele:700,distance_km:8,duree_h:4,temps_voiture_min:110,difficulte:"Moyen",paysage:"Lac",depart:"Le Grand-Bornand"},
+  {nom:"Le Trou de la Mouche",massif:"Aravis",denivele:1100,distance_km:12,duree_h:6,temps_voiture_min:110,difficulte:"Difficile",paysage:"Sommet",depart:"Le Grand-Bornand"},
+  {nom:"Pointe Percée (sommet des Aravis, 2750 m)",massif:"Aravis",denivele:1500,distance_km:13,duree_h:7,temps_voiture_min:110,difficulte:"Très difficile",paysage:"Sommet",depart:"Le Grand-Bornand"},
+  {nom:"Lac de Peyre",massif:"Aravis",denivele:600,distance_km:7,duree_h:3.5,temps_voiture_min:115,difficulte:"Moyen",paysage:"Lac",depart:"Le Reposoir"},
+  // ── CHABLAIS (110–135 min) ──
+  {nom:"Mont Billiat",massif:"Chablais",denivele:800,distance_km:9,duree_h:4.5,temps_voiture_min:110,difficulte:"Moyen",paysage:"Sommet",depart:"Vailly"},
+  {nom:"Mont Chéry",massif:"Chablais",denivele:700,distance_km:8,duree_h:4,temps_voiture_min:120,difficulte:"Moyen",paysage:"Panorama",depart:"Les Gets"},
+  {nom:"Lac de Tavaneuse",massif:"Chablais",denivele:800,distance_km:10,duree_h:5,temps_voiture_min:130,difficulte:"Moyen",paysage:"Lac",depart:"Abondance"},
+  {nom:"Les Cornettes de Bise",massif:"Chablais",denivele:1200,distance_km:13,duree_h:6.5,temps_voiture_min:135,difficulte:"Difficile",paysage:"Sommet",depart:"La Chapelle-d'Abondance"},
+  // ── CHARTREUSE (120–140 min) ──
+  {nom:"Le Charmant Som",massif:"Chartreuse",denivele:500,distance_km:7,duree_h:3,temps_voiture_min:120,difficulte:"Moyen",paysage:"Panorama",depart:"Col de Porte"},
+  {nom:"Chamechaude (sommet de Chartreuse, 2082 m)",massif:"Chartreuse",denivele:750,distance_km:8,duree_h:4,temps_voiture_min:130,difficulte:"Moyen",paysage:"Sommet",depart:"Col de Porte"},
+  {nom:"La Grande Sure",massif:"Chartreuse",denivele:900,distance_km:11,duree_h:5,temps_voiture_min:130,difficulte:"Difficile",paysage:"Sommet",depart:"Pomarey"},
+  {nom:"Dent de Crolles",massif:"Chartreuse",denivele:850,distance_km:11,duree_h:5,temps_voiture_min:140,difficulte:"Difficile",paysage:"Panorama",depart:"Col du Coq"},
+  // ── 2ᵉ série ──
+  {nom:"Mont Myon",massif:"Bugey",denivele:300,distance_km:7,duree_h:3,temps_voiture_min:45,difficulte:"Facile",paysage:"Panorama",depart:"Pressiat"},
+  {nom:"Cascade de Cerveyrieu",massif:"Bugey",denivele:100,distance_km:5,duree_h:2,temps_voiture_min:50,difficulte:"Facile",paysage:"Cascade",depart:"Artemare"},
+  {nom:"Le Crêt du Nu (Lac du Bourget)",massif:"Bugey",denivele:700,distance_km:10,duree_h:4.5,temps_voiture_min:55,difficulte:"Moyen",paysage:"Panorama",depart:"Béon"},
+  {nom:"Le Chapeau de Gendarme",massif:"Haut-Jura",denivele:200,distance_km:5,duree_h:2,temps_voiture_min:55,difficulte:"Facile",paysage:"Panorama",depart:"Septmoncel"},
+  {nom:"La Roche Blanche",massif:"Haut-Jura",denivele:400,distance_km:8,duree_h:3.5,temps_voiture_min:55,difficulte:"Moyen",paysage:"Panorama",depart:"Septmoncel"},
+  {nom:"Lac de l'Abbaye",massif:"Haut-Jura",denivele:150,distance_km:9,duree_h:3,temps_voiture_min:65,difficulte:"Facile",paysage:"Lac",depart:"Grande-Rivière"},
+  {nom:"Lac de Chalain",massif:"Jura",denivele:100,distance_km:8,duree_h:2.5,temps_voiture_min:70,difficulte:"Facile",paysage:"Lac",depart:"Marigny"},
+  {nom:"Belvédère de la Reculée de Ladoye",massif:"Jura",denivele:250,distance_km:7,duree_h:3,temps_voiture_min:80,difficulte:"Moyen",paysage:"Panorama",depart:"Ladoye-sur-Seille"},
+  {nom:"Mont Poupet",massif:"Jura",denivele:500,distance_km:9,duree_h:4,temps_voiture_min:95,difficulte:"Moyen",paysage:"Panorama",depart:"Salins-les-Bains"},
+  {nom:"Source du Lison",massif:"Jura",denivele:200,distance_km:7,duree_h:3,temps_voiture_min:100,difficulte:"Facile",paysage:"Cascade",depart:"Nans-sous-Sainte-Anne"},
+  {nom:"La Dent du Chat",massif:"Bugey",denivele:900,distance_km:10,duree_h:5,temps_voiture_min:110,difficulte:"Difficile",paysage:"Panorama",depart:"Le Bourget-du-Lac"},
+  {nom:"La Croix du Nivolet",massif:"Bauges",denivele:700,distance_km:11,duree_h:4.5,temps_voiture_min:110,difficulte:"Moyen",paysage:"Panorama",depart:"Les Déserts"},
+  {nom:"Le Môle",massif:"Bornes",denivele:900,distance_km:9,duree_h:5,temps_voiture_min:100,difficulte:"Moyen",paysage:"Sommet",depart:"Saint-Jean-de-Tholome"},
+  {nom:"Pointe d'Andey",massif:"Bornes",denivele:800,distance_km:8,duree_h:4.5,temps_voiture_min:95,difficulte:"Moyen",paysage:"Panorama",depart:"Bonneville"},
+  {nom:"Plateau des Glières",massif:"Bornes",denivele:300,distance_km:9,duree_h:3,temps_voiture_min:90,difficulte:"Facile",paysage:"Plateau",depart:"Thorens-Glières"},
+  {nom:"Montagne de Sous-Dine",massif:"Bornes",denivele:1000,distance_km:11,duree_h:5.5,temps_voiture_min:95,difficulte:"Difficile",paysage:"Sommet",depart:"Thorens-Glières"},
+  {nom:"Lac de Roy",massif:"Aravis",denivele:600,distance_km:7,duree_h:3.5,temps_voiture_min:110,difficulte:"Moyen",paysage:"Lac",depart:"Le Grand-Bornand"},
+  {nom:"Pointe de Marcelly",massif:"Chablais",denivele:700,distance_km:8,duree_h:4,temps_voiture_min:115,difficulte:"Moyen",paysage:"Sommet",depart:"Taninges"},
+  {nom:"Lac de Montriond",massif:"Chablais",denivele:100,distance_km:6,duree_h:2,temps_voiture_min:125,difficulte:"Facile",paysage:"Lac",depart:"Montriond"},
+  {nom:"Le Mont Granier",massif:"Chartreuse",denivele:1000,distance_km:11,duree_h:5.5,temps_voiture_min:140,difficulte:"Difficile",paysage:"Sommet",depart:"Chapareillan"}
+];
+const SEED_VERSION = 3;
+
+/* ─────────────────────────────  Saints / Fête du jour  ───────────────────── */
+const SAINTS={"01-01":"Marie","01-02":"Basile","01-03":"Geneviève","01-04":"Odilon","01-05":"Édouard","01-06":"Mélaine","01-07":"Raymond","01-08":"Lucien","01-09":"Alix","01-10":"Guillaume","01-11":"Pauline","01-12":"Tatiana","01-13":"Yvette","01-14":"Nina","01-15":"Rémi","01-16":"Marcel","01-17":"Roseline","01-18":"Prisca","01-19":"Marius","01-20":"Sébastien","01-21":"Agnès","01-22":"Vincent","01-23":"Barnard","01-24":"François de Sales","01-25":"Conversion de Paul","01-26":"Paule","01-27":"Angèle","01-28":"Thomas d'Aquin","01-29":"Gildas","01-30":"Martine","01-31":"Marcelle","02-01":"Ella","02-02":"Présentation","02-03":"Blaise","02-04":"Véronique","02-05":"Agathe","02-06":"Gaston","02-07":"Eugénie","02-08":"Jacqueline","02-09":"Apolline","02-10":"Arnaud","02-11":"N.-D. de Lourdes","02-12":"Félix","02-13":"Béatrice","02-14":"Valentin","02-15":"Claude","02-16":"Julienne","02-17":"Alexis","02-18":"Bernadette","02-19":"Gabin","02-20":"Aimée","02-21":"Pierre Damien","02-22":"Isabelle","02-23":"Lazare","02-24":"Modeste","02-25":"Roméo","02-26":"Nestor","02-27":"Honorine","02-28":"Romain","02-29":"Auguste","03-01":"Aubin","03-02":"Charles le Bon","03-03":"Guénolé","03-04":"Casimir","03-05":"Olive","03-06":"Colette","03-07":"Félicité","03-08":"Jean de Dieu","03-09":"Françoise","03-10":"Vivien","03-11":"Rosine","03-12":"Justine","03-13":"Rodrigue","03-14":"Mathilde","03-15":"Louise","03-16":"Bénédicte","03-17":"Patrice","03-18":"Cyrille","03-19":"Joseph","03-20":"Herbert","03-21":"Clémence","03-22":"Léa","03-23":"Victorien","03-24":"Catherine de Suède","03-25":"Annonciation","03-26":"Larissa","03-27":"Habib","03-28":"Gontran","03-29":"Gwladys","03-30":"Amédée","03-31":"Benjamin","04-01":"Hugues","04-02":"Sandrine","04-03":"Richard","04-04":"Isidore","04-05":"Irène","04-06":"Marcellin","04-07":"J.-B. de la Salle","04-08":"Julie","04-09":"Gautier","04-10":"Fulbert","04-11":"Stanislas","04-12":"Jules","04-13":"Ida","04-14":"Maxime","04-15":"Paterne","04-16":"Benoît-Joseph","04-17":"Anicet","04-18":"Parfait","04-19":"Emma","04-20":"Odette","04-21":"Anselme","04-22":"Alexandre","04-23":"Georges","04-24":"Fidèle","04-25":"Marc","04-26":"Alida","04-27":"Zita","04-28":"Valérie","04-29":"Catherine de Sienne","04-30":"Robert","05-01":"Fête du Travail","05-02":"Boris","05-03":"Philippe & Jacques","05-04":"Sylvain","05-05":"Judith","05-06":"Prudence","05-07":"Gisèle","05-08":"Victoire 1945","05-09":"Pacôme","05-10":"Solange","05-11":"Estelle","05-12":"Achille","05-13":"Rolande","05-14":"Matthias","05-15":"Denise","05-16":"Honoré","05-17":"Pascal","05-18":"Éric","05-19":"Yves","05-20":"Bernardin","05-21":"Constantin","05-22":"Émile","05-23":"Didier","05-24":"Donatien","05-25":"Sophie","05-26":"Bérenger","05-27":"Augustin","05-28":"Germain","05-29":"Aymar","05-30":"Ferdinand","05-31":"Visitation","06-01":"Justin","06-02":"Blandine","06-03":"Kévin","06-04":"Clotilde","06-05":"Igor","06-06":"Norbert","06-07":"Gilbert","06-08":"Médard","06-09":"Diane","06-10":"Landry","06-11":"Barnabé","06-12":"Guy","06-13":"Antoine de Padoue","06-14":"Élisée","06-15":"Germaine","06-16":"J.-F. Régis","06-17":"Hervé","06-18":"Léonce","06-19":"Romuald","06-20":"Silvère","06-21":"Rodolphe","06-22":"Alban","06-23":"Audrey","06-24":"Jean-Baptiste","06-25":"Prosper","06-26":"Anthelme","06-27":"Fernand","06-28":"Irénée","06-29":"Pierre & Paul","06-30":"Martial","07-01":"Thierry","07-02":"Martinien","07-03":"Thomas","07-04":"Florent","07-05":"Antoine","07-06":"Mariette","07-07":"Raoul","07-08":"Thibaut","07-09":"Amandine","07-10":"Ulrich","07-11":"Benoît","07-12":"Olivier","07-13":"Henri & Joël","07-14":"Fête Nationale","07-15":"Donald","07-16":"N.-D. du Mont-Carmel","07-17":"Charlotte","07-18":"Frédéric","07-19":"Arsène","07-20":"Marina","07-21":"Victor","07-22":"Marie-Madeleine","07-23":"Brigitte","07-24":"Christine","07-25":"Jacques","07-26":"Anne & Joachim","07-27":"Nathalie","07-28":"Samson","07-29":"Marthe","07-30":"Juliette","07-31":"Ignace de Loyola","08-01":"Alphonse","08-02":"Julien Eymard","08-03":"Lydie","08-04":"J.-M. Vianney","08-05":"Abel","08-06":"Transfiguration","08-07":"Gaétan","08-08":"Dominique","08-09":"Amour","08-10":"Laurent","08-11":"Claire","08-12":"Clarisse","08-13":"Hippolyte","08-14":"Évrard","08-15":"Assomption","08-16":"Armel","08-17":"Hyacinthe","08-18":"Hélène","08-19":"Jean Eudes","08-20":"Bernard","08-21":"Christophe","08-22":"Fabrice","08-23":"Rose de Lima","08-24":"Barthélemy","08-25":"Louis","08-26":"Natacha","08-27":"Monique","08-28":"Augustin","08-29":"Sabine","08-30":"Fiacre","08-31":"Aristide","09-01":"Gilles","09-02":"Ingrid","09-03":"Grégoire","09-04":"Rosalie","09-05":"Raïssa","09-06":"Bertrand","09-07":"Reine","09-08":"Nativité de Marie","09-09":"Alain","09-10":"Inès","09-11":"Adelphe","09-12":"Apollinaire","09-13":"Aimé","09-14":"La Sainte-Croix","09-15":"Roland","09-16":"Édith","09-17":"Renaud","09-18":"Nadège","09-19":"Émilie","09-20":"Davy","09-21":"Matthieu","09-22":"Maurice","09-23":"Constant","09-24":"Thècle","09-25":"Hermann","09-26":"Côme & Damien","09-27":"Vincent de Paul","09-28":"Venceslas","09-29":"Michel, Gabriel, Raphaël","09-30":"Jérôme","10-01":"Thérèse de l'E.-J.","10-02":"Léger","10-03":"Gérard","10-04":"François d'Assise","10-05":"Fleur","10-06":"Bruno","10-07":"Serge","10-08":"Pélagie","10-09":"Denis","10-10":"Ghislain","10-11":"Firmin","10-12":"Wilfried","10-13":"Géraud","10-14":"Juste","10-15":"Thérèse d'Avila","10-16":"Edwige","10-17":"Baudouin","10-18":"Luc","10-19":"René","10-20":"Adeline","10-21":"Céline","10-22":"Élodie","10-23":"Jean de Capistran","10-24":"Florentin","10-25":"Crépin","10-26":"Dimitri","10-27":"Émeline","10-28":"Simon & Jude","10-29":"Narcisse","10-30":"Bienvenue","10-31":"Quentin","11-01":"Toussaint","11-02":"Défunts","11-03":"Hubert","11-04":"Charles","11-05":"Sylvie","11-06":"Bertille","11-07":"Carine","11-08":"Geoffroy","11-09":"Théodore","11-10":"Léon","11-11":"Armistice / Martin","11-12":"Christian","11-13":"Brice","11-14":"Sidoine","11-15":"Albert","11-16":"Marguerite","11-17":"Élisabeth","11-18":"Aude","11-19":"Tanguy","11-20":"Edmond","11-21":"Présentation de Marie","11-22":"Cécile","11-23":"Clément","11-24":"Flora","11-25":"Catherine","11-26":"Delphine","11-27":"Séverin","11-28":"Jacques de la M.","11-29":"Saturnin","11-30":"André","12-01":"Florence","12-02":"Viviane","12-03":"François-Xavier","12-04":"Barbara","12-05":"Gérald","12-06":"Nicolas","12-07":"Ambroise","12-08":"Immaculée Conception","12-09":"Pierre Fourier","12-10":"Romaric","12-11":"Daniel","12-12":"Jeanne F.-C.","12-13":"Lucie","12-14":"Odile","12-15":"Ninon","12-16":"Alice","12-17":"Gaël","12-18":"Gatien","12-19":"Urbain","12-20":"Abraham","12-21":"Pierre C.","12-22":"Françoise-Xavière","12-23":"Armand","12-24":"Adèle","12-25":"Noël","12-26":"Étienne","12-27":"Jean","12-28":"Saints Innocents","12-29":"David","12-30":"Roger","12-31":"Sylvestre"};
+
+/* ════════════════════════════════  UTILS  ════════════════════════════════ */
+const $  = id => document.getElementById(id);
+const arr = obj => Object.entries(obj||{}).map(([id,v]) => ({id, ...v}));
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const jsStr = s => String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+
+const JOURS=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+const MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const MOIS3=['jan','fév','mar','avr','mai','juin','juil','aoû','sep','oct','nov','déc'];
+
+function todayStr(){ const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; }
+function fmtH(h){ return h ? h.replace(':','h') : ''; }   // "08:00" -> "08h00"
+function mmdd(d){ return d? d.slice(5,10):''; }
+function parseD(d){ return d? new Date(d+'T00:00:00') : null; }
+function fmtLong(d){ const t=parseD(d); return t? `${JOURS[t.getDay()]} ${t.getDate()} ${MOIS[t.getMonth()]} ${t.getFullYear()}`:'—'; }
+function fmtShort(d){ const t=parseD(d); return t? `${t.getDate()} ${MOIS3[t.getMonth()]} ${t.getFullYear()}`:'—'; }
+function age(d){ if(!d) return null; const n=new Date(),b=new Date(d); let a=n.getFullYear()-b.getFullYear(); const m=n.getMonth()-b.getMonth(); if(m<0||(m===0&&n.getDate()<b.getDate()))a--; return a; }
+
+function toast(msg,type){ const t=$('toast'); t.textContent=msg; t.className='show '+(type||'ok'); clearTimeout(t._t); t._t=setTimeout(()=>t.className='',2600); }
+
+/* ── Lookups ── */
+const getM = id => CACHE.membres[id] ? {id, ...CACHE.membres[id]} : null;
+const getR = id => CACHE.randos[id]  ? {id, ...CACHE.randos[id]}  : null;
+const getS = id => CACHE.sorties[id] ? {id, ...CACHE.sorties[id]} : null;
+const faitesOf  = rid => arr(CACHE.faites).filter(f=>f.randoId===rid);
+const iDid      = rid => arr(CACHE.faites).some(f=>f.randoId===rid && f.membreId===(ME&&ME.id));
+const partsOf   = sid => arr(CACHE.participations).filter(p=>p.sortieId===sid);
+const iJoin     = sid => partsOf(sid).some(p=>p.membreId===(ME&&ME.id));
+const upcoming  = () => arr(CACHE.sorties).filter(s=>s.date>=todayStr()).sort((a,b)=>a.date.localeCompare(b.date));
+const sortieVue = s => !ME || s.organisateurId===ME.id || (s.vu && s.vu[ME.id]);
+function unseenSortieCount(){ if(!ME) return 0; return upcoming().filter(s=>!sortieVue(s)).length; }
+async function markSortiesSeen(){
+  if(!ME) return;
+  const toMark=arr(CACHE.sorties).filter(s=>s.organisateurId!==ME.id && !(s.vu&&s.vu[ME.id]));
+  if(!toMark.length) return;
+  await Promise.all(toMark.map(s=>DB.update('sorties/'+s.id+'/vu',{[ME.id]:true})));
+}
+
+function avatar(m,size){ const s=size||44;
+  if(m&&m.photo) return `<div class="av" style="width:${s}px;height:${s}px"><img src="${m.photo}" alt=""></div>`;
+  const ini=m?((m.prenom||'?')[0]+((m.nom||'')[0]||'')).toUpperCase():'?';
+  return `<div class="av" style="width:${s}px;height:${s}px;font-size:${Math.round(s*0.4)}px">${esc(ini)}</div>`;
+}
+
+/* Liens de recherche vers les 3 sites */
+function siteLinks(nom){
+  const q = encodeURIComponent(nom+' randonnée');
+  return {
+    visorando:`https://www.google.com/search?q=${q}+site:visorando.com`,
+    altitude :`https://www.google.com/search?q=${q}+site:altituderando.com`,
+    annecy   :`https://www.google.com/search?q=${encodeURIComponent(nom+' randonnée lac annecy aravis outdoor')}`
+  };
+}
+
+function randoChips(r){
+  const c=[];
+  if(r.temps_voiture_min!=null) c.push(`<span class="chip chip-sky">🚗 ${r.temps_voiture_min} min</span>`);
+  if(r.denivele!=null)          c.push(`<span class="chip">⛰️ ${r.denivele} m</span>`);
+  if(r.distance_km!=null)       c.push(`<span class="chip">📏 ${r.distance_km} km</span>`);
+  if(r.duree_h!=null)           c.push(`<span class="chip">⏱️ ${r.duree_h} h</span>`);
+  if(r.difficulte)              c.push(`<span class="chip chip-sun">🎯 ${esc(r.difficulte)}</span>`);
+  if(r.paysage)                 c.push(`<span class="chip chip-green">🌄 ${esc(r.paysage)}</span>`);
+  return c.join('');
+}
+
+/* ════════════════════════════════  PHOTO  ════════════════════════════════ */
+function pickPhoto(maxSize, cb){
+  const inp=$('photo-input'); inp.value='';
+  inp.onchange=e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return;
+    const rd=new FileReader();
+    rd.onload=ev=>{ const img=new Image();
+      img.onload=()=>{ let w=img.width,h=img.height;
+        if(w>maxSize||h>maxSize){ if(w>h){h=Math.round(h*maxSize/w);w=maxSize;}else{w=Math.round(w*maxSize/h);h=maxSize;} }
+        const c=document.createElement('canvas'); c.width=w;c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        cb(c.toDataURL('image/jpeg',0.72));
+      }; img.src=ev.target.result;
+    }; rd.readAsDataURL(f);
+  };
+  inp.click();
+}
+
+/* ════════════════════════════════  MODAL  ════════════════════════════════ */
+function openModal(html){ $('modal-body').innerHTML=html; $('modal-bg').classList.add('open'); }
+function closeModal(e){ if(!e||e.target===$('modal-bg')) $('modal-bg').classList.remove('open'); }
+function closeModalNow(){ $('modal-bg').classList.remove('open'); }
+
+/* ════════════════════════════════  BOOT  ════════════════════════════════ */
+function boot(){
+  DB.watch('config',         v=>{ CACHE.config=v||{};         loaded.config=true;  seedIfNeeded(); tryGate(); afterData(); });
+  DB.watch('membres',        v=>{ CACHE.membres=v||{};        loaded.membres=true; tryGate(); afterData(); });
+  DB.watch('randos',         v=>{ CACHE.randos=v||{};         loaded.randos=true;  seedIfNeeded(); afterData(); });
+  DB.watch('faites',         v=>{ CACHE.faites=v||{};         afterData(); });
+  DB.watch('sorties',        v=>{ CACHE.sorties=v||{};        onSortiesChange(); afterData(); });
+  DB.watch('participations', v=>{ CACHE.participations=v||{}; afterData(); });
+  DB.watch('messages',       v=>{ CACHE.messages=v||{};       onMessagesChange(); afterData(); });
+  DB.watch('presence',       v=>{ CACHE.presence=v||{};       afterData(); });
+}
+
+// La porte d'entrée n'apparaît qu'une fois les données de base chargées
+// (évite d'afficher "choisis ton profil" avant que les membres soient connus).
+let gateStarted=false;
+function tryGate(){
+  if(gateStarted || !loaded.config || !loaded.membres) return;
+  gateStarted=true;
+  gateStart();
+}
+
+let seeding=false;
+const withDefaults = r => ({...r, region:r.region||r.massif||null, description:r.description||'', url:r.url||'', createdBy:'seed', createdAt:new Date().toISOString()});
+function seedIfNeeded(){
+  if(seeding || !loaded.config || !loaded.randos) return;
+  const cfg = CACHE.config||{};
+  if(cfg.seeded && (cfg.seedVersion||1) >= SEED_VERSION) return;
+  seeding=true;
+  (async()=>{
+    try{
+      if(!cfg.seeded){
+        // Première initialisation
+        await DB.update('config',{ password:cfg.password||'rando', teamName:'Team Rando', seeded:true, seedVersion:SEED_VERSION });
+        for(const r of SEED_RANDOS) await DB.push('randos', withDefaults(r));
+      } else {
+        // Mise à jour du catalogue : ajoute les nouvelles randos + complète les massifs manquants
+        const have={}; arr(CACHE.randos).forEach(x=>{ have[(x.nom||'').toLowerCase().trim()]=x; });
+        for(const r of SEED_RANDOS){
+          const ex=have[r.nom.toLowerCase().trim()];
+          if(!ex) await DB.push('randos', withDefaults(r));
+          else if(!ex.massif && r.massif) await DB.update('randos/'+ex.id,{massif:r.massif});
+        }
+        await DB.update('config',{ seedVersion:SEED_VERSION });
+      }
+    }catch(e){ console.error(e); }
+  })();
+}
+
+let _rt;
+function afterData(){
+  if(ME && CACHE.membres[ME.id]) ME={id:ME.id, ...CACHE.membres[ME.id]};
+  clearTimeout(_rt); _rt=setTimeout(()=>{ if(appReady){ renderView(CURRENT); updateBadges(); } },70);
+}
+
+/* ════════════════════════════  ACCÈS / PROFIL  ════════════════════════════ */
+function show(id){ $(id).classList.add('show'); }
+function hide(id){ $(id).classList.remove('show'); }
+
+function gateStart(){
+  if(localStorage.getItem('tr_pw_ok')) pwOk();
+  else { show('ov-pw'); setTimeout(()=>$('pw-input').focus(),200); }
+}
+function submitPw(){
+  const v=$('pw-input').value.trim().toLowerCase();
+  const real=String((CACHE.config&&CACHE.config.password)||'rando').toLowerCase();
+  if(v===real){ localStorage.setItem('tr_pw_ok','1'); hide('ov-pw'); pwOk(); }
+  else { $('pw-err').style.display='block'; $('pw-input').value=''; $('pw-input').focus(); }
+}
+function pwOk(){
+  const id=localStorage.getItem('tr_me');
+  if(id && CACHE.membres[id]){ ME={id, ...CACHE.membres[id]}; enterApp(); }
+  else showPicker();
+}
+function showPicker(){
+  const ms=arr(CACHE.membres).sort((a,b)=>(a.prenom||'').localeCompare(b.prenom||''));
+  $('profil-card').innerHTML=`
+    <div class="ov-emoji">👋</div>
+    <div class="ov-title">Qui es-tu ?</div>
+    <div class="ov-sub">Choisis ton profil ou crée-le</div>
+    <div style="margin:16px 0 8px;text-align:left">
+      ${ms.length?ms.map(m=>`<button class="pick" onclick="choisirProfil('${m.id}')">${avatar(m,46)}<span class="nm">${esc(m.prenom)} ${esc(m.nom||'')}</span></button>`).join(''):'<p class="mini-note">Aucun membre encore. Crée le premier profil 👇</p>'}
+    </div>
+    <button class="btn btn-sun btn-full" onclick="openCreerProfil()">➕ Créer mon profil</button>`;
+  show('ov-profil');
+}
+function choisirProfil(id){ localStorage.setItem('tr_me',id); ME={id, ...CACHE.membres[id]}; hide('ov-profil'); enterApp(); }
+
+let _npPhoto=null;
+function openCreerProfil(){
+  _npPhoto=null;
+  const first = arr(CACHE.membres).length===0;
+  $('profil-card').innerHTML=`
+    <div class="ov-title" style="margin-bottom:14px">➕ Mon profil</div>
+    <div class="photo-pick">
+      <img id="np-prev" class="photo-prev" src="" style="display:none">
+      <button class="btn btn-soft btn-sm" onclick="npPhoto()">📷 Ajouter ma photo</button>
+    </div>
+    <div style="text-align:left">
+      <div class="frow">
+        <div class="fg"><label>Prénom *</label><input id="np-prenom" placeholder="Jean"></div>
+        <div class="fg"><label>Nom</label><input id="np-nom" placeholder="Dupont"></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><label>Naissance</label><input type="date" id="np-naiss"></div>
+        <div class="fg"><label>Téléphone</label><input type="tel" id="np-tel" placeholder="06…"></div>
+      </div>
+    </div>
+    ${first?'<p class="mini-note">🛡️ Tu seras l\'administrateur (1er membre).</p>':''}
+    <button class="btn btn-full btn-lg" style="margin-top:6px" onclick="creerProfil()">Créer mon profil ✓</button>
+    <button class="btn btn-ghost btn-full btn-sm" style="margin-top:8px" onclick="showPicker()">← Retour</button>`;
+}
+function npPhoto(){ pickPhoto(400,d=>{ _npPhoto=d; const p=$('np-prev'); p.src=d; p.style.display='block'; }); }
+async function creerProfil(){
+  const prenom=$('np-prenom').value.trim(); if(!prenom) return toast('Indique ton prénom','err');
+  const first=arr(CACHE.membres).length===0;
+  const data={ prenom, nom:$('np-nom').value.trim()||null, photo:_npPhoto, date_naissance:$('np-naiss').value||null,
+    telephone:$('np-tel').value.trim()||null, isAdmin:first, createdAt:new Date().toISOString() };
+  const id=await DB.push('membres',data);
+  localStorage.setItem('tr_me',id); ME={id,...data};
+  hide('ov-profil'); toast('Bienvenue '+prenom+' ! 🎉'); enterApp();
+}
+
+function enterApp(){
+  appReady=true; $('app').style.display='block';
+  navigate('home');
+  if(METEO===null) loadMeteo();
+  startPresence();
+  // init "déjà vu" pour ne pas notifier l'historique au démarrage
+  lastMsgKnown = (msgsArr().slice(-1)[0]||{}).id || '';
+  lastSortieKnown = (arr(CACHE.sorties).sort((a,b)=>(a.createdAt||'').localeCompare(b.createdAt||'')).slice(-1)[0]||{}).id || '';
+}
+
+/* ════════════════════════════════  NAV  ════════════════════════════════ */
+function navigate(v){
+  CURRENT=v;
+  document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
+  $('view-'+v).classList.add('active');
+  const n=document.querySelector(`.nav-item[data-v="${v}"]`); if(n)n.classList.add('active');
+  window.scrollTo(0,0);
+  renderView(v);
+}
+function renderView(v){
+  ({home:renderHome,sorties:renderSorties,randos:renderRandos,messages:renderMessages,membres:renderMembres,reglages:renderReglages}[v]||(()=>{}))();
+}
+function setNavBadge(id,n){ const b=$(id); if(!b) return; b.textContent=n>0?(n>99?'99':n):''; b.style.display=n>0?'flex':'none'; }
+function updateBadges(){
+  const ns=unseenSortieCount();
+  const nm=unreadMsgCount();
+  setNavBadge('nav-badge-sorties', ns);
+  setNavBadge('nav-badge-messages', nm);
+  const total=ns+nm;
+  if('setAppBadge' in navigator){ if(total>0) navigator.setAppBadge(total).catch(()=>{}); else navigator.clearAppBadge().catch(()=>{}); }
+}
+
+/* ════════════════════════════════  MÉTÉO  ════════════════════════════════ */
+const WICON={0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌧️",61:"🌧️",63:"🌧️",65:"🌧️",71:"❄️",73:"❄️",75:"❄️",77:"❄️",80:"🌦️",81:"🌧️",82:"⛈️",85:"❄️",86:"❄️",95:"⛈️",96:"⛈️",99:"⛈️"};
+async function loadMeteo(){
+  try{
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${NANTUA.lat}&longitude=${NANTUA.lon}&current=temperature_2m,weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Europe/Paris&forecast_days=1`);
+    const d=await r.json();
+    METEO={ temp:Math.round(d.current.temperature_2m), ic:WICON[d.current.weathercode]||'🌡️',
+      max:Math.round(d.daily.temperature_2m_max[0]), min:Math.round(d.daily.temperature_2m_min[0]) };
+  }catch{ METEO={fail:true}; }
+  if(appReady && CURRENT==='home') renderHome();
+}
+
+/* ════════════════════════════════  ACCUEIL  ════════════════════════════════ */
+function renderHome(){
+  const now=new Date();
+  const key=`${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const fete=SAINTS[key];
+  const teamName=(CACHE.config&&CACHE.config.teamName)||'Team Rando';
+  const teamPhoto=CACHE.config&&CACHE.config.teamPhoto;
+
+  const bdays=arr(CACHE.membres).filter(m=>m.date_naissance && mmdd(m.date_naissance)===key);
+  const bdayHtml=bdays.length?`<div class="bday"><span class="ic">🎂</span><div>Joyeux anniversaire <b>${bdays.map(b=>esc(b.prenom)).join(', ')}</b> !${bdays[0].date_naissance?` <span style="opacity:.8">(${age(bdays[0].date_naissance)} ans)</span>`:''}</div></div>`:'';
+
+  const meteoLink=`https://www.google.com/search?q=${encodeURIComponent('meteoblue Nantua montagne')}`;
+  const meteoHtml=METEO
+    ? (METEO.fail
+        ? `<a class="hero-meteo" href="${meteoLink}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">🌦️ Météo montagne ↗</a>`
+        : `<a class="hero-meteo" href="${meteoLink}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">${METEO.ic} ${METEO.temp}°C à Nantua · ${METEO.min}°/${METEO.max}° · détails ↗</a>`)
+    : `<div class="hero-meteo">🌡️ Météo…</div>`;
+
+  const teamBlock = teamPhoto
+    ? `<img class="team-photo" src="${teamPhoto}" alt="La Team" onclick="reglerTeamPhoto()">`
+    : `<div class="team-photo-empty" onclick="reglerTeamPhoto()"><div style="font-size:38px">📸</div><div>Ajouter la photo de la Team</div></div>`;
+
+  const next=upcoming().slice(0,3);
+  const nextHtml=next.length?next.map(sortieCard).join(''):`<div class="empty"><div class="e-ic">🌄</div><p>Pas de sortie prévue.<br>Lance la prochaine aventure !</p><button class="btn btn-sun" style="margin-top:14px" onclick="navigate('sorties')">Créer une sortie</button></div>`;
+
+  $('view-home').innerHTML=`
+    <div class="hero">
+      <div class="sun">☀️</div>
+      <div class="hero-day">${JOURS[now.getDay()]}</div>
+      <div class="hero-date">${now.getDate()} ${MOIS[now.getMonth()]}</div>
+      ${fete?`<div class="hero-fete">✨ Bonne fête aux ${esc(fete)}</div>`:''}
+      ${meteoHtml}
+    </div>
+    <div class="team-photo-wrap">${teamBlock}</div>
+    <div class="team-cap">${esc(teamName)} <small>${arr(CACHE.membres).length} randonneurs · région de Nantua</small></div>
+    ${bdayHtml}
+    <div class="stats">
+      <div class="stat"><div class="v">${arr(CACHE.randos).length}</div><div class="l">Randos</div></div>
+      <div class="stat"><div class="v">${arr(CACHE.membres).length}</div><div class="l">La Team</div></div>
+      <div class="stat"><div class="v">${arr(CACHE.faites).filter(f=>f.membreId===ME.id).length}</div><div class="l">Mes faites</div></div>
+    </div>
+    <div class="section-t">📅 Prochaines sorties</div>
+    ${nextHtml}
+    <div style="height:14px"></div>`;
+}
+
+function reglerTeamPhoto(){
+  pickPhoto(1100, async d=>{ await DB.update('config',{teamPhoto:d}); toast('Photo de la Team mise à jour ! 📸'); });
+}
+
+/* ════════════════════════════════  SORTIES  ════════════════════════════════ */
+function sortieCard(s){
+  const t=parseD(s.date); const r=s.randoId?getR(s.randoId):null;
+  const nom=r?r.nom:(s.titre||'Rando à choisir');
+  const org=getM(s.organisateurId);
+  const np=partsOf(s.id).length;
+  return `<div class="sortie" onclick="openSortie('${s.id}')">
+    <div class="sortie-band">
+      <div class="sortie-date"><div class="d">${t?t.getDate():'?'}</div><div class="m">${t?MOIS3[t.getMonth()]:''}</div><div class="j">${t?JOURS[t.getDay()].slice(0,3):''}</div></div>
+      <div class="sortie-main">
+        <div class="sortie-nom">${esc(nom)}</div>
+        <div class="sortie-org">Organisé par ${esc(org?org.prenom:'?')}</div>
+        <div class="chips">
+          ${s.heure?`<span class="chip chip-sun">🚗 ${fmtH(s.heure)}</span>`:''}
+          ${iJoin(s.id)?'<span class="chip chip-green">✓ Je viens</span>':''}
+          <span class="chip">👥 ${np}</span>
+          ${r&&r.temps_voiture_min!=null?`<span class="chip chip-sky">⏱️ ${r.temps_voiture_min} min route</span>`:''}
+          ${!r?'<span class="chip chip-sun">💡 rando à définir</span>':''}
+        </div>
+      </div>
+    </div></div>`;
+}
+
+function renderSorties(){
+  const up=upcoming();
+  const past=arr(CACHE.sorties).filter(s=>s.date<todayStr()).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
+  $('view-sorties').innerHTML=`
+    <div class="phead"><div class="phead-row"><div><h2>📅 Sorties</h2><div class="sub">Qui veut randonner, et quand</div></div>
+      <button class="btn btn-sun btn-sm" onclick="openCreerSortie()">+ Sortie</button></div></div>
+    ${up.length?up.map(sortieCard).join(''):`<div class="empty"><div class="e-ic">📅</div><p>Aucune sortie à venir</p><button class="btn btn-sun" style="margin-top:14px" onclick="openCreerSortie()">Créer la première</button></div>`}
+    ${past.length?`<div class="section-t">🕘 Sorties passées</div>${past.map(sortieCard).join('')}`:''}
+    <div style="height:14px"></div>`;
+  markSortiesSeen();
+}
+
+function openCreerSortie(){
+  openModal(`
+    <h3>📅 Nouvelle sortie</h3>
+    <div class="frow">
+      <div class="fg"><label>Quel jour ? *</label><input type="date" id="cs-date" min="${todayStr()}"></div>
+      <div class="fg"><label>🚗 Départ covoiturage</label><input type="time" id="cs-heure"></div>
+    </div>
+    <div class="fg"><label>📍 Lieu de covoiturage</label><input id="cs-lieu" placeholder="Parking Intermarché Nantua…"></div>
+    <div class="fg"><label>Titre (facultatif)</label><input id="cs-titre" placeholder="Sortie du dimanche"></div>
+    <div class="fg"><label>Autres infos</label><textarea id="cs-notes" rows="2" placeholder="Pique-nique, équipement…"></textarea></div>
+    <p class="mini-note">💡 Inscris-toi, invite les copains, puis l'appli proposera des randos que personne n'a encore faites.</p>
+    <button class="btn btn-full btn-lg" onclick="creerSortie()">Créer la sortie ✓</button>`);
+}
+async function creerSortie(){
+  const date=$('cs-date').value; if(!date) return toast('Choisis une date','err');
+  const id=await DB.push('sorties',{ date, heure:$('cs-heure').value||null, lieuCovoit:$('cs-lieu').value.trim()||null,
+    randoId:null, titre:$('cs-titre').value.trim()||null, vu:{[ME.id]:true},
+    organisateurId:ME.id, notes:$('cs-notes').value.trim()||null, statut:'planifiee', createdAt:new Date().toISOString() });
+  await DB.push('participations',{ sortieId:id, membreId:ME.id, createdAt:new Date().toISOString() });
+  closeModalNow(); toast('Sortie créée ! 🎉'); navigate('sorties');
+}
+
+function openSortie(id){
+  const s=getS(id); if(!s) return;
+  const r=s.randoId?getR(s.randoId):null;
+  const org=getM(s.organisateurId);
+  const isOrga=s.organisateurId===ME.id || ME.isAdmin;
+  const parts=partsOf(id).map(p=>getM(p.membreId)).filter(Boolean);
+  const nom=r?r.nom:(s.titre||'Rando à définir');
+
+  const partHtml=parts.length?parts.map(m=>`<div class="prow">${avatar(m,38)}<div><b>${esc(m.prenom)} ${esc(m.nom||'')}</b><div style="font-size:12px;color:var(--muted);font-weight:700">${arr(CACHE.faites).filter(f=>f.membreId===m.id).length} randos faites</div></div></div>`).join(''):'<p class="mini-note">Personne inscrit pour l\'instant</p>';
+
+  const covoit = (s.heure||s.lieuCovoit)?`<div class="card" style="margin:0 0 12px;background:#fff7ed;border-color:#fed7aa">
+      <div class="card-t" style="font-size:15px">🚗 Covoiturage</div>
+      ${s.heure?`<div style="font-weight:800">Départ à ${fmtH(s.heure)}</div>`:''}
+      ${s.lieuCovoit?`<div style="margin-top:2px">📍 ${esc(s.lieuCovoit)} <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.lieuCovoit)}" target="_blank" rel="noopener" style="color:var(--sky-d);font-weight:800;text-decoration:none">· voir ↗</a></div>`:''}
+    </div>`:'';
+
+  openModal(`
+    <div class="dhead"><div class="s">${fmtLong(s.date)}</div><div class="t">${esc(nom)}</div><div class="s">Organisé par ${esc(org?org.prenom:'?')}</div></div>
+    ${covoit}
+    ${r?`<div class="chips" style="margin-bottom:12px">${randoChips(r)}</div>${r.depart?`<p class="mini-note" style="text-align:left;padding:0 0 10px">📍 Départ rando : <b>${esc(r.depart)}</b>${r.massif||r.region?` · massif ${esc(r.massif||r.region)}`:''}</p>`:''}${siteButtons(r)}`:`<div class="sugg" style="margin-bottom:12px">⚠️ La rando n'est pas encore choisie. Inscrivez-vous puis touchez <b>Suggestions</b>.</div>`}
+    ${s.notes?`<div class="card" style="margin:0 0 12px"><div class="card-t">ℹ️ Infos</div>${esc(s.notes)}</div>`:''}
+    <div class="card-t" style="padding:0 0 4px">👥 Participants (${parts.length})</div>
+    <div style="margin-bottom:14px">${partHtml}</div>
+    <div class="chips" style="gap:8px">
+      ${iJoin(id)?(s.organisateurId===ME.id?'':`<button class="btn btn-danger btn-sm" onclick="quitterSortie('${id}')">Me désinscrire</button>`):`<button class="btn btn-sm" onclick="rejoindreSortie('${id}')">✓ Je viens !</button>`}
+      <button class="btn btn-soft btn-sm" onclick="openSuggestions('${id}')">💡 Suggestions rando</button>
+      ${isOrga?`<button class="btn btn-ghost btn-sm" onclick="openEditSortie('${id}')">✏️ Modifier</button>`:''}
+      ${isOrga?`<button class="btn btn-danger btn-sm" onclick="supprSortie('${id}')">🗑️</button>`:''}
+    </div>`);
+}
+async function rejoindreSortie(id){ await DB.push('participations',{sortieId:id,membreId:ME.id,createdAt:new Date().toISOString()}); toast('Tu participes ! 🥾'); openSortie(id); }
+async function quitterSortie(id){
+  const mine=partsOf(id).find(p=>p.membreId===ME.id); if(mine) await DB.remove('participations/'+mine.id);
+  toast('Désinscrit'); openSortie(id);
+}
+async function supprSortie(id){
+  if(!confirm('Supprimer cette sortie ?')) return;
+  for(const p of partsOf(id)) await DB.remove('participations/'+p.id);
+  await DB.remove('sorties/'+id); closeModalNow(); toast('Sortie supprimée'); navigate('sorties');
+}
+function openEditSortie(id){
+  const s=getS(id);
+  openModal(`<h3>✏️ Modifier la sortie</h3>
+    <div class="frow">
+      <div class="fg"><label>Date</label><input type="date" id="es-date" value="${s.date}"></div>
+      <div class="fg"><label>🚗 Départ covoit.</label><input type="time" id="es-heure" value="${s.heure||''}"></div>
+    </div>
+    <div class="fg"><label>📍 Lieu de covoiturage</label><input id="es-lieu" value="${esc(s.lieuCovoit||'')}" placeholder="Parking Intermarché Nantua…"></div>
+    <div class="fg"><label>Titre</label><input id="es-titre" value="${esc(s.titre||'')}"></div>
+    <div class="fg"><label>Autres infos</label><textarea id="es-notes" rows="2">${esc(s.notes||'')}</textarea></div>
+    <button class="btn btn-full btn-lg" onclick="majSortie('${id}')">Enregistrer</button>`);
+}
+async function majSortie(id){
+  await DB.update('sorties/'+id,{date:$('es-date').value,heure:$('es-heure').value||null,lieuCovoit:$('es-lieu').value.trim()||null,titre:$('es-titre').value.trim()||null,notes:$('es-notes').value.trim()||null});
+  toast('Modifié ✓'); openSortie(id);
+}
+
+function openSuggestions(sid){
+  const partIds=partsOf(sid).map(p=>p.membreId);
+  const done=new Set(arr(CACHE.faites).filter(f=>partIds.includes(f.membreId)).map(f=>f.randoId));
+  let list=arr(CACHE.randos).filter(r=>!done.has(r.id))
+    .sort((a,b)=>faitesOf(a.id).length-faitesOf(b.id).length || (a.temps_voiture_min||0)-(b.temps_voiture_min||0));
+  openModal(`
+    <h3>💡 Suggestions</h3>
+    <p class="mini-note" style="text-align:left;padding:0 0 6px">Randos que <b>personne parmi les inscrits</b> n'a encore faite. Filtre par temps de voiture :</p>
+    <div class="filters" style="margin:0 -4px 12px;border:none;padding:0">
+      ${[[30,'≤ 30 min'],[60,'≤ 1h'],[90,'≤ 1h30'],[150,'≤ 2h30']].map(([v,l])=>`<span class="fchip" onclick="filtSugg('${sid}',${v},this)">${l}</span>`).join('')}
+      <span class="fchip on" onclick="filtSugg('${sid}',0,this)">Toutes</span>
+    </div>
+    <div id="sugg-list">${suggHtml(sid,list)}</div>`);
+}
+function suggHtml(sid,list){
+  if(!list.length) return '<div class="empty"><div class="e-ic">🎉</div><p>Tout a déjà été fait par le groupe !<br>Ajoutez de nouvelles randos.</p></div>';
+  return list.map(r=>`<div class="sugg">
+    <div class="n">${esc(r.nom)}</div>
+    <div class="m">${[r.massif||r.region,r.temps_voiture_min!=null?`🚗 ${r.temps_voiture_min} min`:'',r.denivele!=null?`⛰️ ${r.denivele} m`:'',r.difficulte].filter(Boolean).join(' · ')}</div>
+    <div class="chips" style="margin-top:9px">
+      <button class="btn btn-sm" onclick="choisirRando('${sid}','${r.id}')">✓ Choisir</button>
+      <button class="btn btn-ghost btn-sm" onclick="openRando('${r.id}')">Détails</button>
+    </div></div>`).join('');
+}
+function filtSugg(sid,max,el){
+  document.querySelectorAll('#modal-body .fchip').forEach(c=>c.classList.remove('on')); el.classList.add('on');
+  const partIds=partsOf(sid).map(p=>p.membreId);
+  const done=new Set(arr(CACHE.faites).filter(f=>partIds.includes(f.membreId)).map(f=>f.randoId));
+  let list=arr(CACHE.randos).filter(r=>!done.has(r.id));
+  if(max) list=list.filter(r=>(r.temps_voiture_min||999)<=max);
+  list.sort((a,b)=>faitesOf(a.id).length-faitesOf(b.id).length || (a.temps_voiture_min||0)-(b.temps_voiture_min||0));
+  $('sugg-list').innerHTML=suggHtml(sid,list);
+}
+async function choisirRando(sid,rid){
+  await DB.update('sorties/'+sid,{randoId:rid}); toast('Rando choisie ! 🥾'); openSortie(sid);
+}
+
+/* ════════════════════════════════  RANDOS  ════════════════════════════════ */
+let RF={};   // filtres randos
+function renderRandos(){
+  const counts={}; arr(CACHE.randos).forEach(r=>{ const m=r.massif||r.region; if(m) counts[m]=(counts[m]||0)+1; });
+  const massifs=Object.keys(counts).sort();
+  $('view-randos').innerHTML=`
+    <div class="phead"><div class="phead-row"><div><h2>🥾 Randos</h2><div class="sub">${arr(CACHE.randos).length} randos à ≤ 2h30 de Nantua</div></div>
+      <button class="btn btn-sun btn-sm" onclick="openCreerRando()">+ Ajouter</button></div></div>
+    <div class="searchbar"><div class="search-in">🔍<input id="r-search" placeholder="Chercher une rando, un lieu…" value="${esc(RF.q||'')}" oninput="majSearch(this.value)"></div>
+      <select class="massif-select" onchange="setRF('massif',this.value)">
+        <option value="">⛰️ Tous les massifs</option>
+        ${massifs.map(m=>`<option value="${esc(m)}" ${RF.massif===m?'selected':''}>${esc(m)} (${counts[m]})</option>`).join('')}
+      </select>
+    </div>
+    <div class="filters">
+      ${[['','Toutes'],['30','🚗 ≤30min'],['60','≤1h'],['90','≤1h30'],['150','≤2h30']].map(([v,l])=>`<span class="fchip ${(''+(RF.voiture||''))===v?'on':''}" onclick="setRF('voiture','${v}')">${l}</span>`).join('')}
+      <span class="fchip ${RF.todo?'on':''}" onclick="toggleRF('todo')">✨ Pas encore faites</span>
+      ${['Facile','Moyen','Difficile'].map(d=>`<span class="fchip ${RF.diff===d?'on':''}" onclick="setRF('diff','${RF.diff===d?'':d}')">${d}</span>`).join('')}
+    </div>
+    <div id="rando-list"></div>`;
+  drawRandos();
+}
+function majSearch(v){ RF.q=v; clearTimeout(window._st); window._st=setTimeout(drawRandos,250); }
+function setRF(k,v){ if(v==='')delete RF[k]; else RF[k]=v; renderRandos(); }
+function toggleRF(k){ if(RF[k])delete RF[k]; else RF[k]=1; renderRandos(); }
+function drawRandos(){
+  let list=arr(CACHE.randos);
+  if(RF.q){ const q=RF.q.toLowerCase(); list=list.filter(r=>(r.nom+' '+(r.depart||'')+' '+(r.massif||r.region||'')+' '+(r.paysage||'')).toLowerCase().includes(q)); }
+  if(RF.massif) list=list.filter(r=>(r.massif||r.region)===RF.massif);
+  if(RF.voiture) list=list.filter(r=>(r.temps_voiture_min||999)<=+RF.voiture);
+  if(RF.diff) list=list.filter(r=>r.difficulte===RF.diff);
+  if(RF.todo) list=list.filter(r=>!iDid(r.id));
+  list.sort((a,b)=>(a.temps_voiture_min||999)-(b.temps_voiture_min||999) || a.nom.localeCompare(b.nom));
+  const el=$('rando-list'); if(!el) return;
+  const count=`<div class="rando-count">${list.length} rando${list.length>1?'s':''}${RF.massif?` · ${esc(RF.massif)}`:''}${RF.voiture?` · ≤ ${RF.voiture==='150'?'2h30':RF.voiture==='90'?'1h30':RF.voiture==='60'?'1h':RF.voiture+' min'} de route`:''} · triées par temps de voiture ⬇️</div>`;
+  el.innerHTML=list.length?count+list.map(r=>{
+    const nb=faitesOf(r.id).length; const done=iDid(r.id);
+    return `<div class="rando" onclick="openRando('${r.id}')">
+      <div class="rando-top"><div style="flex:1;min-width:0"><div class="rando-nom">${esc(r.nom)}</div><div class="rando-region">⛰️ ${esc(r.massif||r.region||'')}${r.depart?` · ${esc(r.depart)}`:''}</div></div>
+        <button class="rando-done-btn ${done?'done':''}" onclick="quickToggleFaite('${r.id}',event)" title="${done?"Tu l'as faite — appuie pour retirer":'Marquer comme faite'}">${done?'✅':'⬜'}</button></div>
+      <div class="chips">${randoChips(r)}</div>
+      ${nb?`<div style="font-size:12.5px;color:var(--green-d);font-weight:800;margin-top:7px">👣 Faite ${nb}× dans la team</div>`:'<div style="font-size:12.5px;color:var(--orange-d);font-weight:800;margin-top:7px">✨ Jamais faite par la team</div>'}
+    </div>`;
+  }).join(''):`<div class="empty"><div class="e-ic">🥾</div><p>Aucune rando trouvée</p><button class="btn btn-sun" style="margin-top:12px" onclick="openCreerRando()">Ajouter une rando</button></div>`;
+}
+
+function cleanPlace(r){ let d=(r.depart||'').split('/')[0].split('(')[0].trim(); return d || r.massif || r.region || r.nom; }
+function geoQuery(r){ return encodeURIComponent(cleanPlace(r)+', '+(r.massif||r.region||'')+', France'); }
+function mapsUrl(r){ return `https://www.google.com/maps/dir/?api=1&destination=${geoQuery(r)}`; }
+function meteoUrl(r){ return `https://www.google.com/search?q=${encodeURIComponent('meteoblue '+cleanPlace(r))}`; }
+
+function siteButtons(r){
+  const L=siteLinks(r.nom);
+  return `<div style="margin:4px 0 8px">
+    ${r.url?`<a class="sitelink" href="${esc(r.url)}" target="_blank" rel="noopener"><span class="logo" style="background:var(--green)">🔗</span> Voir la fiche enregistrée <span class="arr">↗</span></a>`:''}
+    <a class="sitelink" href="${L.visorando}" target="_blank" rel="noopener"><span class="logo" style="background:#2e7d32">V</span> Chercher sur Visorando <span class="arr">↗</span></a>
+    <a class="sitelink" href="${L.altitude}" target="_blank" rel="noopener"><span class="logo" style="background:#0277bd">A</span> Chercher sur AltitudeRando <span class="arr">↗</span></a>
+    <a class="sitelink" href="${L.annecy}" target="_blank" rel="noopener"><span class="logo" style="background:var(--orange-d)">🏔️</span> Lac Annecy Aravis Outdoor <span class="arr">↗</span></a>
+    <a class="sitelink" href="${mapsUrl(r)}" target="_blank" rel="noopener"><span class="logo" style="background:#1a73e8">📍</span> Itinéraire (Google Maps) <span class="arr">↗</span></a>
+    <a class="sitelink" href="${meteoUrl(r)}" target="_blank" rel="noopener"><span class="logo" style="background:#0ea5e9">🌦️</span> Météo montagne (meteoblue) <span class="arr">↗</span></a>
+  </div>`;
+}
+
+function openRando(id){
+  const r=getR(id); if(!r) return;
+  const faits=faitesOf(id).map(f=>({...f,m:getM(f.membreId)})).filter(x=>x.m);
+  const mine=r.createdBy===ME.id || ME.isAdmin;
+  openModal(`
+    <div class="dhead"><div class="t">${esc(r.nom)}</div><div class="s">⛰️ ${esc(r.massif||r.region||'')}${r.depart?` · départ ${esc(r.depart)}`:''}</div></div>
+    <div class="chips" style="margin-bottom:12px">${randoChips(r)}</div>
+    ${r.description?`<p style="margin-bottom:12px">${esc(r.description)}</p>`:''}
+    ${siteButtons(r)}
+    <div class="card" style="margin:12px 0 0">
+      <div class="card-t" style="font-size:15px">👣 Qui l'a faite (${faits.length})</div>
+      ${faits.length?faits.map(x=>`<div class="prow">${avatar(x.m,34)}<div><b>${esc(x.m.prenom)} ${esc(x.m.nom||'')}</b>${x.date_faite?`<div style="font-size:12px;color:var(--muted);font-weight:700">${fmtShort(x.date_faite)}${x.note?' · '+esc(x.note):''}</div>`:''}</div></div>`).join(''):'<p class="mini-note" style="text-align:left;padding:6px 0">Personne dans la team ne l\'a encore faite ! 🌟</p>'}
+    </div>
+    <div class="chips" style="margin-top:14px">
+      ${iDid(id)?`<button class="btn btn-ghost btn-sm" onclick="retirerFaite('${id}')">✗ Je ne l'ai plus faite</button>`:`<button class="btn btn-sm" onclick="openMarquerFaite('${id}')">✅ Je l'ai faite !</button>`}
+      ${mine?`<button class="btn btn-ghost btn-sm" onclick="openEditRando('${id}')">✏️ Modifier</button>`:''}
+      ${mine?`<button class="btn btn-danger btn-sm" onclick="supprRando('${id}')">🗑️</button>`:''}
+    </div>`);
+}
+function openMarquerFaite(id){
+  const r=getR(id);
+  openModal(`<h3>✅ ${esc(r.nom)}</h3>
+    <div class="fg"><label>Quand l'as-tu faite ?</label><input type="date" id="mf-date" value="${todayStr()}"></div>
+    <div class="fg"><label>Un mot (facultatif)</label><textarea id="mf-note" rows="2" placeholder="Vue magnifique au sommet…"></textarea></div>
+    <button class="btn btn-full btn-lg" onclick="marquerFaite('${id}')">C'est fait ! 🎉</button>`);
+}
+async function marquerFaite(id){
+  await DB.push('faites',{ randoId:id, membreId:ME.id, date_faite:$('mf-date').value||null, note:$('mf-note').value.trim()||null, createdAt:new Date().toISOString() });
+  toast('Bravo ! 🎉'); openRando(id);
+}
+async function retirerFaite(id){
+  const mine=arr(CACHE.faites).filter(f=>f.randoId===id&&f.membreId===ME.id);
+  for(const f of mine) await DB.remove('faites/'+f.id);
+  toast('Retiré'); openRando(id);
+}
+async function quickToggleFaite(rid,e){
+  if(e&&e.stopPropagation) e.stopPropagation();
+  if(iDid(rid)){
+    const mine=arr(CACHE.faites).filter(f=>f.randoId===rid&&f.membreId===ME.id);
+    for(const f of mine) await DB.remove('faites/'+f.id);
+    toast('Retiré de tes randos faites');
+  } else {
+    await DB.push('faites',{randoId:rid,membreId:ME.id,date_faite:todayStr(),note:null,createdAt:new Date().toISOString()});
+    toast('Ajouté à tes randos faites ✅');
+  }
+  drawRandos();
+}
+async function supprRando(id){
+  if(!confirm('Supprimer cette rando du catalogue ?')) return;
+  for(const f of faitesOf(id)) await DB.remove('faites/'+f.id);
+  await DB.remove('randos/'+id); closeModalNow(); toast('Rando supprimée'); drawRandos();
+}
+function openCreerRando(){ randoForm(null); }
+function openEditRando(id){ randoForm(getR(id)); }
+function randoForm(r){
+  r=r||{};
+  const opt=(arr,sel)=>arr.map(o=>`<option ${o===sel?'selected':''}>${o}</option>`).join('');
+  openModal(`<h3>${r.id?'✏️ Modifier':'🥾 Nouvelle rando'}</h3>
+    ${r.id?'':`<div class="fg" style="background:#f0f9ff;border:1.5px dashed var(--sky);border-radius:14px;padding:12px">
+      <label>📥 Importer depuis un lien</label>
+      <input type="url" id="rf-import" placeholder="Collez l'adresse Visorando / AltitudeRando…">
+      <button class="btn btn-soft btn-sm btn-full" style="margin-top:8px" onclick="importDepuisLien()">Pré-remplir avec ce lien</button>
+      <p class="mini-note" style="text-align:left;padding:6px 0 0">Le nom et le lien se remplissent tout seuls. Complétez ensuite voiture, dénivelé, etc.</p>
+    </div>`}
+    <div class="fg"><label>Nom *</label><input id="rf-nom" value="${esc(r.nom||'')}" placeholder="Crêt de la Neige"></div>
+    <div class="fg"><label>Massif</label>
+      <input id="rf-massif" list="massif-list" value="${esc(r.massif||r.region||'')}" placeholder="Haut-Jura, Aravis, Bauges…">
+      <datalist id="massif-list">${['Bugey','Haut-Jura','Jura','Genevois','Annecy','Bornes','Aravis','Bauges','Chablais','Chartreuse'].map(m=>`<option value="${m}">`).join('')}</datalist>
+    </div>
+    <div class="fg"><label>Lieu de départ</label><input id="rf-depart" value="${esc(r.depart||'')}" placeholder="Parking de Lélex"></div>
+    <div class="frow">
+      <div class="fg"><label>🚗 Voiture (min)</label><input type="number" id="rf-voiture" value="${r.temps_voiture_min??''}" placeholder="50"></div>
+      <div class="fg"><label>⛰️ Dénivelé (m)</label><input type="number" id="rf-deniv" value="${r.denivele??''}" placeholder="900"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>📏 Distance (km)</label><input type="number" step="0.1" id="rf-dist" value="${r.distance_km??''}" placeholder="14"></div>
+      <div class="fg"><label>⏱️ Durée (h)</label><input type="number" step="0.5" id="rf-duree" value="${r.duree_h??''}" placeholder="5"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Difficulté</label><select id="rf-diff"><option value="">—</option>${opt(['Facile','Moyen','Difficile','Très difficile'],r.difficulte)}</select></div>
+      <div class="fg"><label>Paysage</label><select id="rf-pays"><option value="">—</option>${opt(['Lac','Sommet','Panorama','Forêt','Cascade','Gorges','Plateau','Glacier','Village'],r.paysage)}</select></div>
+    </div>
+    <div class="fg"><label>Description</label><textarea id="rf-desc" rows="2">${esc(r.description||'')}</textarea></div>
+    <div class="fg"><label>Lien direct (facultatif)</label><input type="url" id="rf-url" value="${esc(r.url||'')}" placeholder="https://www.visorando.com/..."></div>
+    <button class="btn btn-full btn-lg" onclick="saveRando('${r.id||''}')">${r.id?'Enregistrer':'Ajouter la rando'} ✓</button>`);
+}
+function nameFromUrl(u){
+  try{
+    let path=new URL(u).pathname.replace(/\/+$/,'');
+    let seg=decodeURIComponent(path.split('/').pop()||'');
+    seg=seg.replace(/\.(html?|php)$/i,'')
+           .replace(/^(randonnee|rando|circuit|itineraire|trace|hike|balade)[-_]/i,'')
+           .replace(/[-_]+/g,' ')
+           .replace(/\s+\d{3,}$/,'')      // enlève un éventuel identifiant numérique final
+           .replace(/\s+/g,' ').trim();
+    if(!seg) return '';
+    return seg.replace(/\b\p{L}/gu,c=>c.toUpperCase());
+  }catch(e){ return ''; }
+}
+function importDepuisLien(){
+  const u=$('rf-import').value.trim();
+  if(!u) return toast('Collez d\'abord un lien','err');
+  if(!/^https?:\/\//i.test(u)) return toast('Lien invalide (doit commencer par http)','err');
+  $('rf-url').value=u;
+  const nom=nameFromUrl(u);
+  if(nom){ $('rf-nom').value=nom; toast('Nom et lien remplis ✓ — complétez le reste'); }
+  else { toast('Lien ajouté ✓ — saisissez le nom à la main'); }
+}
+async function saveRando(id){
+  const nom=$('rf-nom').value.trim(); if(!nom) return toast('Indique un nom','err');
+  const num=v=>v===''?null:+v;
+  const data={ nom, massif:$('rf-massif').value.trim()||null, region:$('rf-massif').value.trim()||null, depart:$('rf-depart').value.trim()||null,
+    temps_voiture_min:num($('rf-voiture').value), denivele:num($('rf-deniv').value), distance_km:num($('rf-dist').value),
+    duree_h:num($('rf-duree').value), difficulte:$('rf-diff').value||null, paysage:$('rf-pays').value||null,
+    description:$('rf-desc').value.trim()||null, url:$('rf-url').value.trim()||null };
+  if(id){ await DB.update('randos/'+id,data); toast('Modifié ✓'); openRando(id); }
+  else { data.createdBy=ME.id; data.createdAt=new Date().toISOString(); const nid=await DB.push('randos',data); toast('Rando ajoutée ! 🥾'); closeModalNow(); drawRandos(); }
+}
+
+/* ════════════════════════════════  MESSAGERIE  ════════════════════════════════ */
+let lastMsgKnown=null, lastSortieKnown=null, presenceTimer=null;
+
+const msgsArr = () => arr(CACHE.messages).sort((a,b)=>(a.createdAt||'').localeCompare(b.createdAt||''));
+function unreadMsgCount(){ if(!ME) return 0; return msgsArr().filter(m=>m.membreId!==ME.id && !(m.vu&&m.vu[ME.id])).length; }
+
+/* ── Présence (qui est en ligne) ── */
+function onlineMembres(){
+  const now=Date.now();
+  return arr(CACHE.presence).filter(p=>p.lastSeen && (now-p.lastSeen)<120000)
+    .map(p=>getM(p.id)).filter(Boolean).sort((a,b)=>(a.prenom||'').localeCompare(b.prenom||''));
+}
+function isOnline(mid){ const p=CACHE.presence[mid]; return p && p.lastSeen && (Date.now()-p.lastSeen)<120000; }
+function beat(){ if(ME) DB.update('presence/'+ME.id,{lastSeen:Date.now(),prenom:ME.prenom}); }
+function startPresence(){
+  if(!ME) return;
+  beat();
+  clearInterval(presenceTimer);
+  presenceTimer=setInterval(beat,45000);
+  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){ beat(); if(appReady){ renderView(CURRENT); updateBadges(); } } });
+}
+
+/* ── Vue Messages ── */
+function renderMessages(){
+  const list=msgsArr();
+  const online=onlineMembres();
+  const prev=$('msg-input'); const keepVal=prev?prev.value:''; const keepFocus=prev&&document.activeElement===prev;
+  $('view-messages').innerHTML=`
+    <div class="phead"><div class="phead-row"><div><h2>💬 Messages</h2>
+      <div class="sub">${online.length} en ligne${online.length?' · '+online.map(m=>esc(m.prenom)).join(', '):''}</div></div></div></div>
+    <div id="msg-list" class="msg-list">${list.length?list.map(msgBubble).join(''):'<div class="empty"><div class="e-ic">💬</div><p>Aucun message.<br>Lance la discussion avec la team !</p></div>'}</div>
+    <div class="msg-bar">
+      <input id="msg-input" class="msg-input" placeholder="Écris un message…" autocomplete="off" onkeydown="if(event.key==='Enter')sendMessage()">
+      <button class="msg-send" onclick="sendMessage()" aria-label="Envoyer">➤</button>
+    </div>`;
+  const ml=$('msg-list'); if(ml) ml.scrollTop=ml.scrollHeight;
+  const inp=$('msg-input'); if(inp){ inp.value=keepVal; if(keepFocus) inp.focus(); }
+  markMessagesRead();
+}
+function msgBubble(m){
+  const me=m.membreId===(ME&&ME.id);
+  const auth=getM(m.membreId);
+  const t=new Date(m.createdAt);
+  const hh=isNaN(t.getTime())?'':`${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
+  const seers=Object.keys(m.vu||{}).filter(id=>id!==m.membreId).map(id=>getM(id)).filter(Boolean);
+  const seenTxt=me&&seers.length?`<div class="msg-seen">✓ Vu par ${seers.map(s=>esc(s.prenom)).join(', ')}</div>`:'';
+  const canDel=me||(ME&&ME.isAdmin);
+  return `<div class="msg-row ${me?'mine':''}">
+    ${me?'':avatar(auth,32)}
+    <div class="msg-bub ${me?'mine':''}">
+      ${me?'':`<div class="msg-auth">${esc(auth?auth.prenom:'?')}</div>`}
+      <div class="msg-txt">${esc(m.texte)}</div>
+      <div class="msg-meta">${hh}${canDel?` · <span class="msg-del" onclick="supprMessage('${m.id}')">supprimer</span>`:''}</div>
+      ${seenTxt}
+    </div>
+  </div>`;
+}
+async function sendMessage(){
+  const inp=$('msg-input'); if(!inp) return; const t=inp.value.trim(); if(!t) return;
+  inp.value=''; requestNotifPerm();
+  await DB.push('messages',{ membreId:ME.id, texte:t, createdAt:new Date().toISOString(), vu:{[ME.id]:true} });
+}
+async function supprMessage(id){
+  if(!confirm('Supprimer ce message ?')) return;
+  await DB.remove('messages/'+id); toast('Message supprimé');
+}
+async function markMessagesRead(){
+  if(!ME) return;
+  const toMark=msgsArr().filter(m=>m.membreId!==ME.id && !(m.vu&&m.vu[ME.id]));
+  if(!toMark.length) return;
+  await Promise.all(toMark.map(m=>DB.update('messages/'+m.id+'/vu',{[ME.id]:true})));
+}
+
+/* ── Notifications (message / sortie) ── */
+function requestNotifPerm(){
+  try{ if('Notification' in window && Notification.permission==='default') Notification.requestPermission(); }catch(e){}
+}
+function notify(title,body){
+  try{ if('Notification' in window && Notification.permission==='granted') new Notification(title,{body:body,icon:'icon-192.png'}); }catch(e){}
+}
+function onMessagesChange(){
+  if(!appReady||!ME){ return; }
+  const latest=msgsArr().slice(-1)[0];
+  if(lastMsgKnown===null){ lastMsgKnown=latest?latest.id:''; return; }
+  if(latest && latest.id!==lastMsgKnown && latest.membreId!==ME.id){
+    const a=getM(latest.membreId);
+    if(CURRENT!=='messages'){
+      toast('💬 '+(a?a.prenom:'')+' : '+latest.texte.slice(0,38));
+      notify('Team Rando — '+(a?a.prenom:''), latest.texte);
+    }
+  }
+  lastMsgKnown=latest?latest.id:'';
+}
+function onSortiesChange(){
+  if(!appReady||!ME){ return; }
+  const latest=arr(CACHE.sorties).sort((a,b)=>(a.createdAt||'').localeCompare(b.createdAt||'')).slice(-1)[0];
+  if(lastSortieKnown===null){ lastSortieKnown=latest?latest.id:''; return; }
+  if(latest && latest.id!==lastSortieKnown && latest.organisateurId!==ME.id){
+    const a=getM(latest.organisateurId);
+    const msg=(a?a.prenom:'Quelqu\'un')+' propose une sortie le '+fmtShort(latest.date);
+    if(CURRENT!=='sorties'){ toast('📅 '+msg); notify('Team Rando — nouvelle sortie', msg); }
+  }
+  lastSortieKnown=latest?latest.id:'';
+}
+
+/* ════════════════════════════════  MEMBRES  ════════════════════════════════ */
+function renderMembres(){
+  const ms=arr(CACHE.membres).sort((a,b)=>(a.prenom||'').localeCompare(b.prenom||''));
+  const key=`${String(new Date().getMonth()+1).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}`;
+  const online=onlineMembres();
+  $('view-membres').innerHTML=`
+    <div class="phead"><h2>👥 La Team</h2><div class="sub">${ms.length} randonneurs · ${online.length} en ligne</div></div>
+    ${online.length?`<div class="online-row">${online.map(m=>`<span class="online-pill"><span class="dot-online"></span>${esc(m.prenom)}</span>`).join('')}</div>`:''}
+    ${ms.map(m=>{
+      const a=age(m.date_naissance); const bd=m.date_naissance&&mmdd(m.date_naissance)===key; const on=isOnline(m.id);
+      return `<div class="membre"><span class="av-wrap">${avatar(m,52)}${on?'<span class="dot-online"></span>':''}</span>
+        <div style="flex:1;min-width:0">
+          <div class="membre-nom">${esc(m.prenom)} ${esc(m.nom||'')} ${bd?'🎂':''}${m.isAdmin?'<span class="chip chip-sun" style="font-size:10px;padding:2px 7px">admin</span>':''}</div>
+          <div class="membre-det">${a!=null?a+' ans · ':''}${m.telephone?`<a href="tel:${esc(m.telephone)}">📞 ${esc(m.telephone)}</a>`:'pas de téléphone'}</div>
+          <div class="membre-det">🥾 ${arr(CACHE.faites).filter(f=>f.membreId===m.id).length} randos faites${on?' · <span style="color:var(--green-d)">en ligne</span>':''}</div>
+        </div></div>`;
+    }).join('')}
+    <div style="height:14px"></div>`;
+}
+
+/* ════════════════════════════════  RÉGLAGES  ════════════════════════════════ */
+function renderReglages(){
+  const mode=DB.mode==='firebase';
+  $('view-reglages').innerHTML=`
+    <div class="phead"><h2>⚙️ Réglages</h2></div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:14px">${avatar(ME,58)}
+        <div><div style="font-family:'Fredoka';font-size:20px;font-weight:600">${esc(ME.prenom)} ${esc(ME.nom||'')}</div>
+        <div style="font-size:13px;color:var(--muted);font-weight:700">${age(ME.date_naissance)!=null?age(ME.date_naissance)+' ans · ':''}${esc(ME.telephone||'—')}</div></div>
+      </div>
+      <button class="btn btn-soft btn-full btn-sm" style="margin-top:12px" onclick="openEditProfil()">✏️ Modifier mon profil & ma photo</button>
+    </div>
+    <div class="card">
+      <div class="card-t">📸 Photo de la Team</div>
+      <p class="mini-note" style="text-align:left;padding:0 0 10px">Elle s'affiche sur la page d'accueil pour tout le monde.</p>
+      <button class="btn btn-soft btn-full btn-sm" onclick="reglerTeamPhoto()">Changer la photo de la Team</button>
+    </div>
+    ${ME.isAdmin?`<div class="card">
+      <div class="card-t">🛡️ Administration</div>
+      <button class="btn btn-soft btn-full btn-sm" style="margin-bottom:8px" onclick="openCodeGroupe()">🔑 Changer le code du groupe</button>
+      <button class="btn btn-soft btn-full btn-sm" onclick="openGestionMembres()">👥 Gérer les membres</button>
+    </div>`:''}
+    <div class="card">
+      <div class="card-t">📲 Installer l'appli</div>
+      <p class="mini-note" style="text-align:left;padding:0">
+        <b>iPhone :</b> ouvre le lien dans Safari → bouton Partager → « Sur l'écran d'accueil ».<br>
+        <b>Android :</b> ouvre le lien dans Chrome → menu ⋮ → « Installer l'application ».
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-t">ℹ️ État</div>
+      <p class="mini-note" style="text-align:left;padding:0">
+        Données partagées : ${mode?'<b style="color:var(--green-d)">✅ Firebase (tout le monde voit la même chose)</b>':'<span class="badge-mode">⚠️ Mode local (test, ce téléphone seulement)</span><br>Pour partager avec les amis, configure Firebase (voir INSTALLATION.md).'}
+      </p>
+    </div>
+    <div style="padding:4px 14px 0"><button class="btn btn-danger btn-full" onclick="changerProfil()">🔄 Changer de profil</button></div>
+    <div style="height:14px"></div>`;
+}
+function changerProfil(){ localStorage.removeItem('tr_me'); location.reload(); }
+
+function openEditProfil(){
+  let photo=ME.photo||null;
+  openModal(`<h3>✏️ Mon profil</h3>
+    <div class="photo-pick">
+      <img id="ep-prev" class="photo-prev" src="${ME.photo||''}" style="${ME.photo?'':'display:none'}">
+      <button class="btn btn-soft btn-sm" onclick="epPhoto()">📷 ${ME.photo?'Changer':'Ajouter'} ma photo</button>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Prénom</label><input id="ep-prenom" value="${esc(ME.prenom||'')}"></div>
+      <div class="fg"><label>Nom</label><input id="ep-nom" value="${esc(ME.nom||'')}"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Naissance</label><input type="date" id="ep-naiss" value="${ME.date_naissance||''}"></div>
+      <div class="fg"><label>Téléphone</label><input type="tel" id="ep-tel" value="${esc(ME.telephone||'')}"></div>
+    </div>
+    <button class="btn btn-full btn-lg" onclick="majProfil()">Enregistrer ✓</button>`);
+  window.epPhoto=()=>pickPhoto(400,d=>{ photo=d; const p=$('ep-prev'); p.src=d; p.style.display='block'; });
+  window.majProfil=async()=>{
+    await DB.update('membres/'+ME.id,{ prenom:$('ep-prenom').value.trim()||ME.prenom, nom:$('ep-nom').value.trim()||null,
+      date_naissance:$('ep-naiss').value||null, telephone:$('ep-tel').value.trim()||null, photo });
+    toast('Profil mis à jour ✓'); closeModalNow();
+  };
+}
+function openCodeGroupe(){
+  openModal(`<h3>🔑 Code du groupe</h3>
+    <p class="mini-note" style="text-align:left;padding:0 0 10px">C'est le code que tes amis saisissent pour entrer. Communique-le-leur avec le lien.</p>
+    <div class="fg"><label>Nouveau code</label><input id="cg-code" value="${esc(CACHE.config.password||'rando')}"></div>
+    <button class="btn btn-full btn-lg" onclick="majCode()">Enregistrer</button>`);
+  window.majCode=async()=>{ const c=$('cg-code').value.trim(); if(!c) return toast('Code vide','err');
+    await DB.update('config',{password:c}); toast('Code mis à jour ✓'); closeModalNow(); };
+}
+function openGestionMembres(){
+  const ms=arr(CACHE.membres).sort((a,b)=>(a.prenom||'').localeCompare(b.prenom||''));
+  openModal(`<h3>👥 Gérer les membres</h3>
+    ${ms.map(m=>`<div class="prow">${avatar(m,38)}
+      <div style="flex:1"><b>${esc(m.prenom)} ${esc(m.nom||'')}</b>${m.isAdmin?' <span class="chip chip-sun" style="font-size:10px">admin</span>':''}</div>
+      ${m.id!==ME.id?`<button class="btn btn-danger btn-sm" onclick="supprMembre('${m.id}','${jsStr(m.prenom)}')">🗑️</button>${!m.isAdmin?`<button class="btn btn-ghost btn-sm" onclick="promo('${m.id}')">⭐</button>`:''}`:'<span style="font-size:12px;color:var(--muted);font-weight:800">moi</span>'}
+    </div>`).join('')}
+    <p class="mini-note" style="text-align:left">⭐ = passer admin · 🗑️ = retirer du groupe</p>`);
+}
+async function supprMembre(id,nom){ if(!confirm('Retirer '+nom+' du groupe ?')) return; await DB.remove('membres/'+id); toast('Membre retiré'); openGestionMembres(); }
+async function promo(id){ await DB.update('membres/'+id,{isAdmin:true}); toast('Nouveau admin ⭐'); openGestionMembres(); }
+
+/* ════════════════════════════════  START  ════════════════════════════════ */
+window.submitPw=submitPw; window.navigate=navigate; window.closeModal=closeModal;
+window.choisirProfil=choisirProfil; window.openCreerProfil=openCreerProfil;
+window.showPicker=showPicker; window.npPhoto=npPhoto; window.creerProfil=creerProfil;
+window.reglerTeamPhoto=reglerTeamPhoto;
+window.openSortie=openSortie; window.openCreerSortie=openCreerSortie; window.creerSortie=creerSortie;
+window.rejoindreSortie=rejoindreSortie; window.quitterSortie=quitterSortie; window.supprSortie=supprSortie;
+window.openEditSortie=openEditSortie; window.majSortie=majSortie;
+window.openSuggestions=openSuggestions; window.filtSugg=filtSugg; window.choisirRando=choisirRando;
+window.openRando=openRando; window.openCreerRando=openCreerRando; window.openEditRando=openEditRando;
+window.saveRando=saveRando; window.importDepuisLien=importDepuisLien;
+window.majSearch=majSearch; window.setRF=setRF; window.toggleRF=toggleRF;
+window.openMarquerFaite=openMarquerFaite; window.marquerFaite=marquerFaite; window.retirerFaite=retirerFaite; window.supprRando=supprRando;
+window.openEditProfil=openEditProfil; window.openCodeGroupe=openCodeGroupe; window.openGestionMembres=openGestionMembres;
+window.supprMembre=supprMembre; window.promo=promo; window.changerProfil=changerProfil;
+window.sendMessage=sendMessage; window.supprMessage=supprMessage; window.quickToggleFaite=quickToggleFaite;
+
+if(window.__DB_READY) boot();
+else window.addEventListener('db-ready', boot);
