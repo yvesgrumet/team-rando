@@ -1,5 +1,5 @@
 /* Service Worker — Team Rando */
-const CACHE = 'team-rando-v2';
+const CACHE = 'team-rando-v3';
 const ASSETS = ['/', '/index.html', '/style.css', '/app.js', '/db.js', '/pwa.js',
   '/firebase-config.js', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
@@ -24,16 +24,10 @@ self.addEventListener('push', e => {
   let data = {};
   try { data = e.data ? e.data.json() : {}; } catch (err) {}
   const title = data.title || 'Team Rando';
-  const opts = {
-    body: data.body || '',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
-    tag: 'team-rando',
-    renotify: true,
-    data: { url: data.url || '/' }
-  };
+  const opts = { body: data.body || ' ', icon: '/icon-192.png', data: { url: data.url || '/' } };
   e.waitUntil((async () => {
-    await self.registration.showNotification(title, opts);
+    try { await self.registration.showNotification(title, opts); }
+    catch (err) { await self.registration.showNotification('Team Rando'); }
     try { if (self.navigator && self.navigator.setAppBadge) await self.navigator.setAppBadge(); } catch (err) {}
   })());
 });

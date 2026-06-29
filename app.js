@@ -933,8 +933,8 @@ async function pushNotifyOthers(title, body, url){
   }catch(e){ console.warn('push KO', e); }
 }
 async function clearNotifs(){
-  try{ const reg=await navigator.serviceWorker.ready; (await reg.getNotifications()).forEach(n=>n.close()); }catch(e){}
   if('clearAppBadge' in navigator) navigator.clearAppBadge().catch(()=>{});
+  try{ const reg=await navigator.serviceWorker.ready; (await reg.getNotifications()).forEach(n=>n.close()); }catch(e){}
 }
 function notifStatusHtml(){
   if(!pushSupported()) return '<p class="mini-note" style="text-align:left;padding:0">Non géré ici. Sur iPhone : installe d\'abord l\'appli sur l\'écran d\'accueil, puis rouvre-la depuis l\'icône.</p>';
