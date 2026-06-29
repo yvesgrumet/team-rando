@@ -399,14 +399,18 @@ function updateBadges(){
 
 /* ════════════════════════════════  MÉTÉO  ════════════════════════════════ */
 const WICON={0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌧️",61:"🌧️",63:"🌧️",65:"🌧️",71:"❄️",73:"❄️",75:"❄️",77:"❄️",80:"🌦️",81:"🌧️",82:"⛈️",85:"❄️",86:"❄️",95:"⛈️",96:"⛈️",99:"⛈️"};
+let FORECAST=null;   // { 'YYYY-MM-DD': {ic,max,min} } sur 16 jours
 async function loadMeteo(){
   try{
-    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${NANTUA.lat}&longitude=${NANTUA.lon}&current=temperature_2m,weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Europe/Paris&forecast_days=1`);
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${NANTUA.lat}&longitude=${NANTUA.lon}&current=temperature_2m,weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Europe/Paris&forecast_days=16`);
     const d=await r.json();
     METEO={ temp:Math.round(d.current.temperature_2m), ic:WICON[d.current.weathercode]||'🌡️',
       max:Math.round(d.daily.temperature_2m_max[0]), min:Math.round(d.daily.temperature_2m_min[0]) };
-  }catch{ METEO={fail:true}; }
+    FORECAST={};
+    d.daily.time.forEach((date,i)=>{ FORECAST[date]={ ic:WICON[d.daily.weathercode[i]]||'🌡️', max:Math.round(d.daily.temperature_2m_max[i]), min:Math.round(d.daily.temperature_2m_min[i]) }; });
+  }catch{ METEO={fail:true}; FORECAST={}; }
   if(appReady && CURRENT==='home') renderHome();
+  if(appReady && CURRENT==='sorties') renderSorties();
 }
 
 /* ════════════════════════════════  ACCUEIL  ════════════════════════════════ */
@@ -483,23 +487,47 @@ function sortieCard(s){
     </div></div>`;
 }
 
+function calendarStrip(){
+  let cells='';
+  const today=new Date();
+  for(let i=0;i<15;i++){
+    const dt=new Date(today.getFullYear(),today.getMonth(),today.getDate()+i);
+    const ds=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+    const f=(FORECAST&&FORECAST[ds])||{};
+    const ss=arr(CACHE.sorties).filter(s=>s.date===ds);
+    const hasS=ss.length>0;
+    const onclick = hasS ? `openSortie('${ss[0].id}')` : `creerSortieDate('${ds}')`;
+    cells+=`<div class="cal-day ${hasS?'has-sortie':''} ${i===0?'today':''}" onclick="${onclick}">
+      <div class="cal-dow">${JOURS[dt.getDay()].slice(0,3)}</div>
+      <div class="cal-num">${dt.getDate()}</div>
+      <div class="cal-ic">${f.ic||'·'}</div>
+      <div class="cal-temp">${f.max!=null?f.max+'°':''}<span>${f.min!=null?f.min+'°':''}</span></div>
+      ${hasS?'<div class="cal-dot"></div>':''}
+    </div>`;
+  }
+  return `<div class="section-t" style="padding-bottom:2px">🌤️ Météo 15 jours <small style="font-family:'Nunito';font-weight:700;font-size:12px;color:var(--muted)">· Nantua · touche un jour</small></div>
+    <div class="cal-strip">${cells}</div>`;
+}
+function creerSortieDate(ds){ openCreerSortie(ds); }
 function renderSorties(){
   const up=upcoming();
   const past=arr(CACHE.sorties).filter(s=>s.date<todayStr()).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
   $('view-sorties').innerHTML=`
     <div class="phead"><div class="phead-row"><div><h2>📅 Sorties</h2><div class="sub">Qui veut randonner, et quand</div></div>
       <button class="btn btn-sun btn-sm" onclick="openCreerSortie()">+ Sortie</button></div></div>
+    ${calendarStrip()}
+    <div class="section-t">🥾 Sorties prévues</div>
     ${up.length?up.map(sortieCard).join(''):`<div class="empty"><div class="e-ic">📅</div><p>Aucune sortie à venir</p><button class="btn btn-sun" style="margin-top:14px" onclick="openCreerSortie()">Créer la première</button></div>`}
     ${past.length?`<div class="section-t">🕘 Sorties passées</div>${past.map(sortieCard).join('')}`:''}
     <div style="height:14px"></div>`;
   markSortiesSeen();
 }
 
-function openCreerSortie(){
+function openCreerSortie(defDate){
   openModal(`
     <h3>📅 Nouvelle sortie</h3>
     <div class="frow">
-      <div class="fg"><label>Quel jour ? *</label><input type="date" id="cs-date" min="${todayStr()}"></div>
+      <div class="fg"><label>Quel jour ? *</label><input type="date" id="cs-date" min="${todayStr()}" value="${defDate||''}"></div>
       <div class="fg"><label>🚗 Départ covoiturage</label><input type="time" id="cs-heure"></div>
     </div>
     <div class="fg"><label>📍 Lieu de covoiturage</label><input id="cs-lieu" placeholder="Parking Intermarché Nantua…"></div>
@@ -1192,7 +1220,7 @@ window.choisirProfil=choisirProfil; window.openCreerProfil=openCreerProfil;
 window.showPicker=showPicker; window.npPhoto=npPhoto; window.creerProfil=creerProfil;
 window.fmtDateInput=fmtDateInput;
 window.reglerTeamPhoto=reglerTeamPhoto;
-window.openSortie=openSortie; window.openCreerSortie=openCreerSortie; window.creerSortie=creerSortie;
+window.openSortie=openSortie; window.openCreerSortie=openCreerSortie; window.creerSortie=creerSortie; window.creerSortieDate=creerSortieDate;
 window.addPhotosToSortie=addPhotosToSortie; window.openPhoto=openPhoto; window.deletePhoto=deletePhoto;
 window.rejoindreSortie=rejoindreSortie; window.quitterSortie=quitterSortie; window.supprSortie=supprSortie;
 window.openEditSortie=openEditSortie; window.majSortie=majSortie;

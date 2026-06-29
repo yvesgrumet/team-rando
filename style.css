@@ -269,6 +269,21 @@ h1,h2,h3,.fred{font-family:'Fredoka',sans-serif;font-weight:600;}
 .mini-note{font-size:12.5px;color:var(--muted);font-weight:700;text-align:center;padding:10px 16px;line-height:1.5}
 .badge-mode{display:inline-block;font-size:11px;font-weight:800;padding:3px 9px;border-radius:10px;background:#fef3c7;color:#92400e;margin-left:6px}
 
+/* ── CALENDRIER MÉTÉO 15 JOURS ── */
+.cal-strip{display:flex;gap:8px;overflow-x:auto;padding:6px 14px 12px;scrollbar-width:none}
+.cal-strip::-webkit-scrollbar{display:none}
+.cal-day{flex:0 0 auto;width:64px;background:#fff;border:1px solid var(--line);border-radius:15px;
+  padding:8px 4px 7px;text-align:center;cursor:pointer;box-shadow:var(--shadow-sm);position:relative;-webkit-tap-highlight-color:transparent}
+.cal-day:active{transform:scale(.95)}
+.cal-day.today{border-color:var(--sky);background:#eaf6ff}
+.cal-day.has-sortie{border-color:var(--green);background:#f0fdf4}
+.cal-dow{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase}
+.cal-num{font-family:'Fredoka',sans-serif;font-size:19px;font-weight:600;line-height:1.15}
+.cal-ic{font-size:22px;line-height:1.25}
+.cal-temp{font-size:11.5px;font-weight:800;color:var(--orange-d)}
+.cal-temp span{color:var(--sky-d);margin-left:3px}
+.cal-dot{width:7px;height:7px;border-radius:50%;background:var(--green);margin:4px auto 0}
+
 /* ── ALBUM PHOTOS ── */
 .gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .gthumb{aspect-ratio:1;border-radius:11px;overflow:hidden;cursor:pointer;background:#dbeafe;-webkit-tap-highlight-color:transparent}
