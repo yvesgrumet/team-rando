@@ -549,6 +549,7 @@ function openSortie(id){
     <div class="chips" style="gap:8px">
       ${iJoin(id)?(s.organisateurId===ME.id?'':`<button class="btn btn-danger btn-sm" onclick="quitterSortie('${id}')">Me désinscrire</button>`):`<button class="btn btn-sm" onclick="rejoindreSortie('${id}')">✓ Je viens !</button>`}
       <button class="btn btn-soft btn-sm" onclick="openSuggestions('${id}')">💡 Suggestions rando</button>
+      <button class="btn btn-soft btn-sm" onclick="openChan('sortie_${id}','sorties')">💬 Discussion</button>
       ${isOrga?`<button class="btn btn-ghost btn-sm" onclick="openEditSortie('${id}')">✏️ Modifier</button>`:''}
       ${isOrga?`<button class="btn btn-danger btn-sm" onclick="supprSortie('${id}')">🗑️</button>`:''}
     </div>`);
@@ -741,6 +742,7 @@ function openRando(id){
     </div>
     <div class="chips" style="margin-top:14px">
       ${iDid(id)?`<button class="btn btn-ghost btn-sm" onclick="retirerFaite('${id}')">✗ Je ne l'ai plus faite</button>`:`<button class="btn btn-sm" onclick="openMarquerFaite('${id}')">✅ Je l'ai faite !</button>`}
+      <button class="btn btn-soft btn-sm" onclick="openChan('rando_${id}','randos')">💬 Commentaires</button>
       ${mine?`<button class="btn btn-ghost btn-sm" onclick="openEditRando('${id}')">✏️ Modifier</button>`:''}
       ${mine?`<button class="btn btn-danger btn-sm" onclick="supprRando('${id}')">🗑️</button>`:''}
     </div>`);
@@ -867,22 +869,73 @@ function startPresence(){
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){ beat(); clearNotifs(); if(appReady){ renderView(CURRENT); updateBadges(); } } });
 }
 
+/* ── Canaux (Tchat / Sortie / Rando) ── */
+let MTAB='general', MCHAN='general';
+const chanOf   = m => m.channel || 'general';
+const chanMsgs = chan => msgsArr().filter(m=>chanOf(m)===chan);
+function unreadInChan(chan){ if(!ME) return 0; return chanMsgs(chan).filter(m=>m.membreId!==ME.id && !(m.vu&&m.vu[ME.id])).length; }
+function tabUnread(tab){
+  if(!ME) return 0;
+  if(tab==='general') return unreadInChan('general');
+  const pref = tab==='sorties'?'sortie_':'rando_';
+  return msgsArr().filter(m=>m.membreId!==ME.id && !(m.vu&&m.vu[ME.id]) && chanOf(m).startsWith(pref)).length;
+}
+function chanTitle(chan){
+  if(chan==='general') return '💬 Tchat général';
+  if(chan.indexOf('sortie_')===0){ const s=getS(chan.slice(7)); const r=s&&s.randoId?getR(s.randoId):null; return '📅 '+(r?r.nom:(s&&s.titre)||'Sortie')+(s?' · '+fmtShort(s.date):''); }
+  if(chan.indexOf('rando_')===0){ const r=getR(chan.slice(6)); return '🥾 '+(r?r.nom:'Rando'); }
+  return '💬';
+}
+function activeChan(){ if(MTAB==='general') return 'general'; if(MCHAN && MCHAN!=='general') return MCHAN; return null; }
+function setMTab(tab){ MTAB=tab; MCHAN = tab==='general'?'general':null; renderMessages(); }
+function openChan(chan,tab){ MTAB=tab||MTAB; MCHAN=chan; if(CURRENT!=='messages') navigate('messages'); else renderMessages(); }
+function backToList(){ MCHAN=null; renderMessages(); }
+
 /* ── Vue Messages ── */
 function renderMessages(){
-  const list=msgsArr();
   const online=onlineMembres();
+  const tabs=[['general','💬 Tchat'],['sorties','📅 Sorties'],['randos','🥾 Randos']];
+  const ac=activeChan();
   const prev=$('msg-input'); const keepVal=prev?prev.value:''; const keepFocus=prev&&document.activeElement===prev;
+  const inner = ac ? chatBlock(ac) : (MTAB==='sorties'?discList('sortie'):discList('rando'));
   $('view-messages').innerHTML=`
-    <div class="phead"><div class="phead-row"><div><h2>💬 Messages</h2>
-      <div class="sub">${online.length} en ligne${online.length?' · '+online.map(m=>esc(m.prenom)).join(', '):''}</div></div></div></div>
-    <div id="msg-list" class="msg-list">${list.length?list.map(msgBubble).join(''):'<div class="empty"><div class="e-ic">💬</div><p>Aucun message.<br>Lance la discussion avec la team !</p></div>'}</div>
+    <div class="phead"><h2>💬 Messages</h2><div class="sub">${online.length} en ligne${online.length?' · '+online.map(m=>esc(m.prenom)).join(', '):''}</div></div>
+    <div class="filters" style="position:sticky;top:0;z-index:16">
+      ${tabs.map(([v,l])=>{const u=tabUnread(v);return `<span class="fchip ${MTAB===v?'on':''}" onclick="setMTab('${v}')">${l}${u?` <span class="disc-badge" style="display:inline-flex;height:17px;min-width:17px;font-size:10px">${u}</span>`:''}</span>`;}).join('')}
+    </div>
+    ${inner}`;
+  const ml=$('msg-list'); if(ml) ml.scrollTop=ml.scrollHeight;
+  const inp=$('msg-input'); if(inp){ inp.value=keepVal; if(keepFocus) inp.focus(); }
+  if(ac) markMessagesRead(ac);
+}
+function chatBlock(chan){
+  const list=chanMsgs(chan);
+  const head = chan==='general' ? '' : `<div class="chat-head"><button class="btn btn-ghost btn-sm" onclick="backToList()">←</button> <b>${esc(chanTitle(chan))}</b></div>`;
+  return `${head}
+    <div id="msg-list" class="msg-list">${list.length?list.map(msgBubble).join(''):`<div class="empty"><div class="e-ic">💬</div><p>${chan==='general'?'Lance la discussion avec la team !':'Aucun message ici.<br>Écris le premier !'}</p></div>`}</div>
     <div class="msg-bar">
+      <button class="msg-photo" onclick="sendPhotoMsg()" aria-label="Envoyer une photo">📷</button>
       <input id="msg-input" class="msg-input" placeholder="Écris un message…" autocomplete="off" onkeydown="if(event.key==='Enter')sendMessage()">
       <button class="msg-send" onclick="sendMessage()" aria-label="Envoyer">➤</button>
     </div>`;
-  const ml=$('msg-list'); if(ml) ml.scrollTop=ml.scrollHeight;
-  const inp=$('msg-input'); if(inp){ inp.value=keepVal; if(keepFocus) inp.focus(); }
-  markMessagesRead();
+}
+function discList(kind){
+  if(kind==='sortie'){
+    const ss=arr(CACHE.sorties).sort((a,b)=>b.date.localeCompare(a.date));
+    if(!ss.length) return '<div class="empty"><div class="e-ic">📅</div><p>Aucune sortie.<br>Crée une sortie pour en discuter.</p></div>';
+    return '<div style="padding:6px 0 14px">'+ss.map(s=>{
+      const chan='sortie_'+s.id, n=chanMsgs(chan).length, u=unreadInChan(chan);
+      const r=s.randoId?getR(s.randoId):null, nom=r?r.nom:(s.titre||'Sortie');
+      return `<div class="disc-row" onclick="openChan('${chan}','sorties')"><div style="min-width:0"><b>${esc(nom)}</b><div class="membre-det">${fmtShort(s.date)} · ${n} message${n>1?'s':''}</div></div>${u?`<span class="disc-badge">${u}</span>`:'<span class="disc-arr">›</span>'}</div>`;
+    }).join('')+'</div>';
+  }
+  const cnt={}; msgsArr().forEach(m=>{ const c=chanOf(m); if(c.indexOf('rando_')===0) cnt[c.slice(6)]=(cnt[c.slice(6)]||0)+1; });
+  const ids=Object.keys(cnt);
+  if(!ids.length) return '<div class="empty"><div class="e-ic">🥾</div><p>Aucune discussion de rando.<br>Ouvre une rando → « Commentaires ».</p></div>';
+  return '<div style="padding:6px 0 14px">'+ids.map(id=>{
+    const r=getR(id); if(!r) return ''; const chan='rando_'+id, u=unreadInChan(chan);
+    return `<div class="disc-row" onclick="openChan('${chan}','randos')"><div style="min-width:0"><b>${esc(r.nom)}</b><div class="membre-det">${cnt[id]} message${cnt[id]>1?'s':''}</div></div>${u?`<span class="disc-badge">${u}</span>`:'<span class="disc-arr">›</span>'}</div>`;
+  }).join('')+'</div>';
 }
 function msgBubble(m){
   const me=m.membreId===(ME&&ME.id);
@@ -896,27 +949,42 @@ function msgBubble(m){
     ${me?'':avatar(auth,32)}
     <div class="msg-bub ${me?'mine':''}">
       ${me?'':`<div class="msg-auth">${esc(auth?auth.prenom:'?')}</div>`}
-      <div class="msg-txt">${esc(m.texte)}</div>
+      ${m.img?`<img class="msg-img" src="${m.img}" alt="" onclick="openImg('${m.id}')">`:''}
+      ${m.texte?`<div class="msg-txt">${esc(m.texte)}</div>`:''}
       <div class="msg-meta">${hh}${canDel?` · <span class="msg-del" onclick="supprMessage('${m.id}')">supprimer</span>`:''}</div>
       ${seenTxt}
     </div>
   </div>`;
 }
+function openImg(id){ const m=CACHE.messages[id]; if(!m||!m.img) return; openModal(`<img src="${m.img}" style="width:100%;border-radius:14px;display:block"><button class="btn btn-ghost btn-full btn-sm" style="margin-top:12px" onclick="closeModalNow()">Fermer</button>`); }
+function notifyMsg(chan,t){
+  const where = chan==='general' ? 'Tchat' : chanTitle(chan).replace(/^\S+\s/,'');
+  pushNotifyOthers('💬 '+(ME.prenom||'')+' — '+where, (t||'📷 Photo').slice(0,140), '/');
+}
 async function sendMessage(){
   const inp=$('msg-input'); if(!inp) return; const t=inp.value.trim(); if(!t) return;
+  const chan=activeChan()||'general';
   inp.value=''; maybeEnableNotifs();
-  await DB.push('messages',{ membreId:ME.id, texte:t, createdAt:new Date().toISOString(), vu:{[ME.id]:true} });
-  pushNotifyOthers('💬 '+(ME.prenom||'Team Rando'), t.slice(0,140), '/');
+  await DB.push('messages',{ membreId:ME.id, channel:chan, texte:t, createdAt:new Date().toISOString(), vu:{[ME.id]:true} });
+  notifyMsg(chan,t);
+}
+function sendPhotoMsg(){
+  const chan=activeChan()||'general'; maybeEnableNotifs();
+  pickPhoto(1100, async img=>{
+    await DB.push('messages',{ membreId:ME.id, channel:chan, img, createdAt:new Date().toISOString(), vu:{[ME.id]:true} });
+    toast('Photo envoyée 📷'); notifyMsg(chan,null);
+  }, 0.6);
 }
 async function supprMessage(id){
   if(!confirm('Supprimer ce message ?')) return;
   await DB.remove('messages/'+id); toast('Message supprimé');
 }
-async function markMessagesRead(){
+async function markMessagesRead(chan){
   if(!ME) return;
-  const toMark=msgsArr().filter(m=>m.membreId!==ME.id && !(m.vu&&m.vu[ME.id]));
-  if(!toMark.length) return;
-  await Promise.all(toMark.map(m=>DB.update('messages/'+m.id+'/vu',{[ME.id]:true})));
+  let list=msgsArr().filter(m=>m.membreId!==ME.id && !(m.vu&&m.vu[ME.id]));
+  if(chan) list=list.filter(m=>chanOf(m)===chan);
+  if(!list.length) return;
+  await Promise.all(list.map(m=>DB.update('messages/'+m.id+'/vu',{[ME.id]:true})));
 }
 
 /* ── Notifications (message / sortie) ── */
@@ -976,10 +1044,10 @@ function onMessagesChange(){
   if(lastMsgKnown===null){ lastMsgKnown=latest?latest.id:''; return; }
   if(latest && latest.id!==lastMsgKnown && latest.membreId!==ME.id){
     const a=getM(latest.membreId);
-    if(CURRENT!=='messages'){
-      toast('💬 '+(a?a.prenom:'')+' : '+latest.texte.slice(0,38));
-      notify('Team Rando — '+(a?a.prenom:''), latest.texte);
-    }
+    const chan=chanOf(latest);
+    const where = chan==='general' ? '' : ' ('+chanTitle(chan).replace(/^\S+\s/,'').slice(0,22)+')';
+    const corps = latest.texte ? latest.texte.slice(0,38) : '📷 photo';
+    if(CURRENT!=='messages') toast('💬 '+(a?a.prenom:'')+where+' : '+corps);
   }
   lastMsgKnown=latest?latest.id:'';
 }
@@ -1136,6 +1204,7 @@ window.openMarquerFaite=openMarquerFaite; window.marquerFaite=marquerFaite; wind
 window.openEditProfil=openEditProfil; window.openCodeGroupe=openCodeGroupe; window.openGestionMembres=openGestionMembres;
 window.supprMembre=supprMembre; window.supprMembreTeam=supprMembreTeam; window.promo=promo; window.changerProfil=changerProfil;
 window.sendMessage=sendMessage; window.supprMessage=supprMessage; window.quickToggleFaite=quickToggleFaite;
+window.setMTab=setMTab; window.openChan=openChan; window.backToList=backToList; window.sendPhotoMsg=sendPhotoMsg; window.openImg=openImg;
 window.enableNotifs=enableNotifs;
 
 if(window.__DB_READY) boot();
