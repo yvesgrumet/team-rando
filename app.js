@@ -710,6 +710,7 @@ async function choisirRando(sid,rid){
 /* ════════════════════════════════  RANDOS  ════════════════════════════════ */
 let RF={};   // filtres randos
 function renderRandos(){
+  pregeocodeTowns();
   const counts={}; arr(CACHE.randos).forEach(r=>{ const m=r.massif||r.region; if(m) counts[m]=(counts[m]||0)+1; });
   const massifs=Object.keys(counts).sort();
   $('view-randos').innerHTML=`
@@ -729,31 +730,86 @@ function renderRandos(){
     <div id="rando-list"></div>`;
   drawRandos();
 }
-function majSearch(v){ RF.q=v; clearTimeout(window._st); window._st=setTimeout(drawRandos,250); }
+function majSearch(v){ RF.q=v; clearTimeout(window._st); window._st=setTimeout(runSearch,400); }
+async function runSearch(){
+  const q=(RF.q||'').trim(); RF.near=null;
+  if(q){
+    const ql=q.toLowerCase();
+    const textMatch=arr(CACHE.randos).some(r=>(r.nom+' '+(r.depart||'')+' '+(r.massif||r.region||'')+' '+(r.paysage||'')).toLowerCase().includes(ql));
+    if(!textMatch){
+      pregeocodeTowns();
+      const g=await geocode(q);
+      if(g) RF.near={ name:q.charAt(0).toUpperCase()+q.slice(1), lat:g.lat, lon:g.lon };
+    }
+  }
+  drawRandos();
+}
 function setRF(k,v){ if(v==='')delete RF[k]; else RF[k]=v; renderRandos(); }
 function toggleRF(k){ if(RF[k])delete RF[k]; else RF[k]=1; renderRandos(); }
 function drawRandos(){
-  let list=arr(CACHE.randos);
-  if(RF.q){ const q=RF.q.toLowerCase(); list=list.filter(r=>(r.nom+' '+(r.depart||'')+' '+(r.massif||r.region||'')+' '+(r.paysage||'')).toLowerCase().includes(q)); }
-  if(RF.massif) list=list.filter(r=>(r.massif||r.region)===RF.massif);
-  if(RF.voiture) list=list.filter(r=>(r.temps_voiture_min||999)<=+RF.voiture);
-  if(RF.diff) list=list.filter(r=>r.difficulte===RF.diff);
-  if(RF.todo) list=list.filter(r=>!iDid(r.id));
-  list.sort((a,b)=>(a.temps_voiture_min||999)-(b.temps_voiture_min||999) || a.nom.localeCompare(b.nom));
   const el=$('rando-list'); if(!el) return;
-  const count=`<div class="rando-count">${list.length} rando${list.length>1?'s':''}${RF.massif?` · ${esc(RF.massif)}`:''}${RF.voiture?` · ≤ ${RF.voiture==='150'?'2h30':RF.voiture==='90'?'1h30':RF.voiture==='60'?'1h':RF.voiture+' min'} de route`:''} · triées par temps de voiture ⬇️</div>`;
+  const nearMode=!!RF.near;
+  let list, count;
+  if(nearMode){
+    const radiusKm = RF.voiture ? Math.round(+RF.voiture*0.9) : 30;
+    list=arr(CACHE.randos).map(r=>{ const g=randoCoords(r); return {...r,_dist:g?haversineKm(RF.near.lat,RF.near.lon,g.lat,g.lon):null}; })
+      .filter(r=>r._dist!=null && r._dist<=radiusKm);
+    if(RF.massif) list=list.filter(r=>(r.massif||r.region)===RF.massif);
+    if(RF.diff) list=list.filter(r=>r.difficulte===RF.diff);
+    if(RF.todo) list=list.filter(r=>!iDid(r.id));
+    list.sort((a,b)=>a._dist-b._dist);
+    count=`<div class="rando-count">📍 ${list.length} rando${list.length>1?'s':''} autour ${dePrefix(RF.near.name)}<b>${esc(RF.near.name)}</b> (≈ ${radiusKm} km${RF.voiture?'':' / 30 min'})${pregeoDone?'':' · calcul des distances…'}</div>`;
+  } else {
+    list=arr(CACHE.randos);
+    if(RF.q){ const q=RF.q.toLowerCase(); list=list.filter(r=>(r.nom+' '+(r.depart||'')+' '+(r.massif||r.region||'')+' '+(r.paysage||'')).toLowerCase().includes(q)); }
+    if(RF.massif) list=list.filter(r=>(r.massif||r.region)===RF.massif);
+    if(RF.voiture) list=list.filter(r=>(r.temps_voiture_min||999)<=+RF.voiture);
+    if(RF.diff) list=list.filter(r=>r.difficulte===RF.diff);
+    if(RF.todo) list=list.filter(r=>!iDid(r.id));
+    list.sort((a,b)=>(a.temps_voiture_min||999)-(b.temps_voiture_min||999) || a.nom.localeCompare(b.nom));
+    count=`<div class="rando-count">${list.length} rando${list.length>1?'s':''}${RF.massif?` · ${esc(RF.massif)}`:''}${RF.voiture?` · ≤ ${RF.voiture==='150'?'2h30':RF.voiture==='90'?'1h30':RF.voiture==='60'?'1h':RF.voiture+' min'} de route`:''} · triées par temps de voiture ⬇️</div>`;
+  }
   el.innerHTML=list.length?count+list.map(r=>{
     const nb=faitesOf(r.id).length; const done=iDid(r.id);
+    const sub=nearMode?`📍 à ~${Math.round(r._dist)} km ${dePrefix(RF.near.name)}${esc(RF.near.name)} · ${esc(r.massif||r.region||'')}`:`⛰️ ${esc(r.massif||r.region||'')}${r.depart?` · ${esc(r.depart)}`:''}`;
     return `<div class="rando" onclick="openRando('${r.id}')">
-      <div class="rando-top"><div style="flex:1;min-width:0"><div class="rando-nom">${esc(r.nom)}</div><div class="rando-region">⛰️ ${esc(r.massif||r.region||'')}${r.depart?` · ${esc(r.depart)}`:''}</div></div>
+      <div class="rando-top"><div style="flex:1;min-width:0"><div class="rando-nom">${esc(r.nom)}</div><div class="rando-region">${sub}</div></div>
         <button class="rando-done-btn ${done?'done':''}" onclick="quickToggleFaite('${r.id}',event)" title="${done?"Tu l'as faite — appuie pour retirer":'Marquer comme faite'}">${done?'✅':'⬜'}</button></div>
       <div class="chips">${randoChips(r)}</div>
       ${nb?`<div style="font-size:12.5px;color:var(--green-d);font-weight:800;margin-top:7px">👣 Faite ${nb}× dans la team</div>`:'<div style="font-size:12.5px;color:var(--orange-d);font-weight:800;margin-top:7px">✨ Jamais faite par la team</div>'}
     </div>`;
-  }).join(''):`<div class="empty"><div class="e-ic">🥾</div><p>Aucune rando trouvée</p><button class="btn btn-sun" style="margin-top:12px" onclick="openCreerRando()">Ajouter une rando</button></div>`;
+  }).join(''):`<div class="empty"><div class="e-ic">${nearMode?'📍':'🥾'}</div><p>${nearMode?`Aucune rando à ≈ ${RF.voiture?Math.round(+RF.voiture*0.9)+' km':'30 min'} ${dePrefix(RF.near.name)}${esc(RF.near.name)}.<br>Élargis avec ≤1h ou ≤1h30.`:'Aucune rando trouvée'}</p>${nearMode?'':'<button class="btn btn-sun" style="margin-top:12px" onclick="openCreerRando()">Ajouter une rando</button>'}</div>`;
 }
 
 function cleanPlace(r){ let d=(r.depart||'').split('/')[0].split('(')[0].trim(); return d || r.massif || r.region || r.nom; }
+
+/* ── Recherche par proximité d'un lieu (géocodage Open-Meteo, cache local) ── */
+const GEO_KEY='tr_geo_v1';
+let GEO=(()=>{ try{ return JSON.parse(localStorage.getItem(GEO_KEY))||{}; }catch(e){ return {}; } })();
+function saveGEO(){ try{ localStorage.setItem(GEO_KEY,JSON.stringify(GEO)); }catch(e){} }
+const cleanTown = d => (d||'').split('/')[0].split('(')[0].trim();
+async function geocode(name){
+  const key=(name||'').toLowerCase().trim(); if(!key) return null;
+  if(key in GEO) return GEO[key];
+  try{
+    const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1&language=fr`);
+    const d=await r.json();
+    const g=d.results&&d.results[0]?{lat:d.results[0].latitude,lon:d.results[0].longitude}:null;
+    GEO[key]=g; saveGEO(); return g;
+  }catch(e){ return null; }
+}
+function haversineKm(la1,lo1,la2,lo2){ const R=6371,t=x=>x*Math.PI/180,dLa=t(la2-la1),dLo=t(lo2-lo1);
+  const s=Math.sin(dLa/2)**2+Math.cos(t(la1))*Math.cos(t(la2))*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.sqrt(s)); }
+function randoCoords(r){ return GEO[cleanTown(r.depart).toLowerCase()]||null; }
+const dePrefix = n => /^[aeiouyhàâäéèêëîïôöûü]/i.test(n||'') ? "d'" : 'de ';
+let pregeoStarted=false, pregeoDone=false;
+async function pregeocodeTowns(){
+  if(pregeoStarted) return; pregeoStarted=true;
+  const towns=[...new Set(arr(CACHE.randos).map(r=>cleanTown(r.depart)).filter(Boolean))];
+  for(const t of towns){ if(!(t.toLowerCase() in GEO)){ await geocode(t); await new Promise(r=>setTimeout(r,130)); } }
+  pregeoDone=true;
+  if(appReady && CURRENT==='randos' && RF.near) drawRandos();
+}
 function geoQuery(r){ return encodeURIComponent(cleanPlace(r)+', '+(r.massif||r.region||'')+', France'); }
 function mapsUrl(r){ return `https://www.google.com/maps/dir/?api=1&destination=${geoQuery(r)}`; }
 function meteoUrl(r){ return `https://www.google.com/search?q=${encodeURIComponent('meteoblue '+cleanPlace(r))}`; }
