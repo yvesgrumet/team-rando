@@ -95,9 +95,26 @@ const SEED_RANDOS = [
   {nom:"Lac de Roy",massif:"Aravis",denivele:600,distance_km:7,duree_h:3.5,temps_voiture_min:110,difficulte:"Moyen",paysage:"Lac",depart:"Le Grand-Bornand"},
   {nom:"Pointe de Marcelly",massif:"Chablais",denivele:700,distance_km:8,duree_h:4,temps_voiture_min:115,difficulte:"Moyen",paysage:"Sommet",depart:"Taninges"},
   {nom:"Lac de Montriond",massif:"Chablais",denivele:100,distance_km:6,duree_h:2,temps_voiture_min:125,difficulte:"Facile",paysage:"Lac",depart:"Montriond"},
-  {nom:"Le Mont Granier",massif:"Chartreuse",denivele:1000,distance_km:11,duree_h:5.5,temps_voiture_min:140,difficulte:"Difficile",paysage:"Sommet",depart:"Chapareillan"}
+  {nom:"Le Mont Granier",massif:"Chartreuse",denivele:1000,distance_km:11,duree_h:5.5,temps_voiture_min:140,difficulte:"Difficile",paysage:"Sommet",depart:"Chapareillan"},
+  // ── 3ᵉ série ──
+  {nom:"Cascade de Glandieu",massif:"Bugey",denivele:80,distance_km:4,duree_h:1.5,temps_voiture_min:45,difficulte:"Facile",paysage:"Cascade",depart:"Saint-Benoît"},
+  {nom:"Le Grand Crêt d'Eau",massif:"Haut-Jura",denivele:750,distance_km:12,duree_h:4.5,temps_voiture_min:45,difficulte:"Moyen",paysage:"Sommet",depart:"Confort"},
+  {nom:"Mont Tendre (Suisse)",massif:"Haut-Jura",denivele:600,distance_km:13,duree_h:4.5,temps_voiture_min:75,difficulte:"Moyen",paysage:"Sommet",depart:"Le Pont"},
+  {nom:"Le Mont d'Or",massif:"Jura",denivele:400,distance_km:9,duree_h:3.5,temps_voiture_min:100,difficulte:"Moyen",paysage:"Panorama",depart:"Longevilles-Mont-d'Or"},
+  {nom:"Lac de Saint-Point",massif:"Jura",denivele:100,distance_km:9,duree_h:2.5,temps_voiture_min:95,difficulte:"Facile",paysage:"Lac",depart:"Malbuisson"},
+  {nom:"Le Sur Cou",massif:"Bornes",denivele:600,distance_km:8,duree_h:4,temps_voiture_min:85,difficulte:"Moyen",paysage:"Panorama",depart:"Le Petit-Bornand"},
+  {nom:"La Pointe de Beauregard",massif:"Aravis",denivele:400,distance_km:8,duree_h:3,temps_voiture_min:100,difficulte:"Facile",paysage:"Panorama",depart:"La Clusaz"},
+  {nom:"Lac des Confins",massif:"Aravis",denivele:150,distance_km:6,duree_h:2,temps_voiture_min:100,difficulte:"Facile",paysage:"Lac",depart:"La Clusaz"},
+  {nom:"Le Margériaz",massif:"Bauges",denivele:500,distance_km:9,duree_h:3.5,temps_voiture_min:110,difficulte:"Moyen",paysage:"Plateau",depart:"Les Déserts"},
+  {nom:"La Galoppaz",massif:"Bauges",denivele:900,distance_km:10,duree_h:5,temps_voiture_min:100,difficulte:"Difficile",paysage:"Sommet",depart:"Le Châtelard"},
+  {nom:"La Dent d'Oche",massif:"Chablais",denivele:1100,distance_km:11,duree_h:6,temps_voiture_min:135,difficulte:"Difficile",paysage:"Sommet",depart:"Bernex"},
+  {nom:"Mont Forchat",massif:"Chablais",denivele:700,distance_km:9,duree_h:4,temps_voiture_min:120,difficulte:"Moyen",paysage:"Sommet",depart:"Les Habères"},
+  {nom:"Pointe de Chalune",massif:"Chablais",denivele:900,distance_km:10,duree_h:5,temps_voiture_min:130,difficulte:"Difficile",paysage:"Sommet",depart:"Praz-de-Lys"},
+  {nom:"Le Grand Som",massif:"Chartreuse",denivele:1000,distance_km:13,duree_h:6,temps_voiture_min:130,difficulte:"Difficile",paysage:"Sommet",depart:"Saint-Pierre-de-Chartreuse"},
+  {nom:"La Pinéa",massif:"Chartreuse",denivele:600,distance_km:9,duree_h:4,temps_voiture_min:125,difficulte:"Moyen",paysage:"Sommet",depart:"Col de Porte"},
+  {nom:"La Montagne d'Âge",massif:"Genevois",denivele:300,distance_km:7,duree_h:2.5,temps_voiture_min:75,difficulte:"Facile",paysage:"Panorama",depart:"Allonzier-la-Caille"}
 ];
-const SEED_VERSION = 3;
+const SEED_VERSION = 4;
 
 /* ─────────────────────────────  Saints / Fête du jour  ───────────────────── */
 const SAINTS={"01-01":"Marie","01-02":"Basile","01-03":"Geneviève","01-04":"Odilon","01-05":"Édouard","01-06":"Mélaine","01-07":"Raymond","01-08":"Lucien","01-09":"Alix","01-10":"Guillaume","01-11":"Pauline","01-12":"Tatiana","01-13":"Yvette","01-14":"Nina","01-15":"Rémi","01-16":"Marcel","01-17":"Roseline","01-18":"Prisca","01-19":"Marius","01-20":"Sébastien","01-21":"Agnès","01-22":"Vincent","01-23":"Barnard","01-24":"François de Sales","01-25":"Conversion de Paul","01-26":"Paule","01-27":"Angèle","01-28":"Thomas d'Aquin","01-29":"Gildas","01-30":"Martine","01-31":"Marcelle","02-01":"Ella","02-02":"Présentation","02-03":"Blaise","02-04":"Véronique","02-05":"Agathe","02-06":"Gaston","02-07":"Eugénie","02-08":"Jacqueline","02-09":"Apolline","02-10":"Arnaud","02-11":"N.-D. de Lourdes","02-12":"Félix","02-13":"Béatrice","02-14":"Valentin","02-15":"Claude","02-16":"Julienne","02-17":"Alexis","02-18":"Bernadette","02-19":"Gabin","02-20":"Aimée","02-21":"Pierre Damien","02-22":"Isabelle","02-23":"Lazare","02-24":"Modeste","02-25":"Roméo","02-26":"Nestor","02-27":"Honorine","02-28":"Romain","02-29":"Auguste","03-01":"Aubin","03-02":"Charles le Bon","03-03":"Guénolé","03-04":"Casimir","03-05":"Olive","03-06":"Colette","03-07":"Félicité","03-08":"Jean de Dieu","03-09":"Françoise","03-10":"Vivien","03-11":"Rosine","03-12":"Justine","03-13":"Rodrigue","03-14":"Mathilde","03-15":"Louise","03-16":"Bénédicte","03-17":"Patrice","03-18":"Cyrille","03-19":"Joseph","03-20":"Herbert","03-21":"Clémence","03-22":"Léa","03-23":"Victorien","03-24":"Catherine de Suède","03-25":"Annonciation","03-26":"Larissa","03-27":"Habib","03-28":"Gontran","03-29":"Gwladys","03-30":"Amédée","03-31":"Benjamin","04-01":"Hugues","04-02":"Sandrine","04-03":"Richard","04-04":"Isidore","04-05":"Irène","04-06":"Marcellin","04-07":"J.-B. de la Salle","04-08":"Julie","04-09":"Gautier","04-10":"Fulbert","04-11":"Stanislas","04-12":"Jules","04-13":"Ida","04-14":"Maxime","04-15":"Paterne","04-16":"Benoît-Joseph","04-17":"Anicet","04-18":"Parfait","04-19":"Emma","04-20":"Odette","04-21":"Anselme","04-22":"Alexandre","04-23":"Georges","04-24":"Fidèle","04-25":"Marc","04-26":"Alida","04-27":"Zita","04-28":"Valérie","04-29":"Catherine de Sienne","04-30":"Robert","05-01":"Fête du Travail","05-02":"Boris","05-03":"Philippe & Jacques","05-04":"Sylvain","05-05":"Judith","05-06":"Prudence","05-07":"Gisèle","05-08":"Victoire 1945","05-09":"Pacôme","05-10":"Solange","05-11":"Estelle","05-12":"Achille","05-13":"Rolande","05-14":"Matthias","05-15":"Denise","05-16":"Honoré","05-17":"Pascal","05-18":"Éric","05-19":"Yves","05-20":"Bernardin","05-21":"Constantin","05-22":"Émile","05-23":"Didier","05-24":"Donatien","05-25":"Sophie","05-26":"Bérenger","05-27":"Augustin","05-28":"Germain","05-29":"Aymar","05-30":"Ferdinand","05-31":"Visitation","06-01":"Justin","06-02":"Blandine","06-03":"Kévin","06-04":"Clotilde","06-05":"Igor","06-06":"Norbert","06-07":"Gilbert","06-08":"Médard","06-09":"Diane","06-10":"Landry","06-11":"Barnabé","06-12":"Guy","06-13":"Antoine de Padoue","06-14":"Élisée","06-15":"Germaine","06-16":"J.-F. Régis","06-17":"Hervé","06-18":"Léonce","06-19":"Romuald","06-20":"Silvère","06-21":"Rodolphe","06-22":"Alban","06-23":"Audrey","06-24":"Jean-Baptiste","06-25":"Prosper","06-26":"Anthelme","06-27":"Fernand","06-28":"Irénée","06-29":"Pierre & Paul","06-30":"Martial","07-01":"Thierry","07-02":"Martinien","07-03":"Thomas","07-04":"Florent","07-05":"Antoine","07-06":"Mariette","07-07":"Raoul","07-08":"Thibaut","07-09":"Amandine","07-10":"Ulrich","07-11":"Benoît","07-12":"Olivier","07-13":"Henri & Joël","07-14":"Fête Nationale","07-15":"Donald","07-16":"N.-D. du Mont-Carmel","07-17":"Charlotte","07-18":"Frédéric","07-19":"Arsène","07-20":"Marina","07-21":"Victor","07-22":"Marie-Madeleine","07-23":"Brigitte","07-24":"Christine","07-25":"Jacques","07-26":"Anne & Joachim","07-27":"Nathalie","07-28":"Samson","07-29":"Marthe","07-30":"Juliette","07-31":"Ignace de Loyola","08-01":"Alphonse","08-02":"Julien Eymard","08-03":"Lydie","08-04":"J.-M. Vianney","08-05":"Abel","08-06":"Transfiguration","08-07":"Gaétan","08-08":"Dominique","08-09":"Amour","08-10":"Laurent","08-11":"Claire","08-12":"Clarisse","08-13":"Hippolyte","08-14":"Évrard","08-15":"Assomption","08-16":"Armel","08-17":"Hyacinthe","08-18":"Hélène","08-19":"Jean Eudes","08-20":"Bernard","08-21":"Christophe","08-22":"Fabrice","08-23":"Rose de Lima","08-24":"Barthélemy","08-25":"Louis","08-26":"Natacha","08-27":"Monique","08-28":"Augustin","08-29":"Sabine","08-30":"Fiacre","08-31":"Aristide","09-01":"Gilles","09-02":"Ingrid","09-03":"Grégoire","09-04":"Rosalie","09-05":"Raïssa","09-06":"Bertrand","09-07":"Reine","09-08":"Nativité de Marie","09-09":"Alain","09-10":"Inès","09-11":"Adelphe","09-12":"Apollinaire","09-13":"Aimé","09-14":"La Sainte-Croix","09-15":"Roland","09-16":"Édith","09-17":"Renaud","09-18":"Nadège","09-19":"Émilie","09-20":"Davy","09-21":"Matthieu","09-22":"Maurice","09-23":"Constant","09-24":"Thècle","09-25":"Hermann","09-26":"Côme & Damien","09-27":"Vincent de Paul","09-28":"Venceslas","09-29":"Michel, Gabriel, Raphaël","09-30":"Jérôme","10-01":"Thérèse de l'E.-J.","10-02":"Léger","10-03":"Gérard","10-04":"François d'Assise","10-05":"Fleur","10-06":"Bruno","10-07":"Serge","10-08":"Pélagie","10-09":"Denis","10-10":"Ghislain","10-11":"Firmin","10-12":"Wilfried","10-13":"Géraud","10-14":"Juste","10-15":"Thérèse d'Avila","10-16":"Edwige","10-17":"Baudouin","10-18":"Luc","10-19":"René","10-20":"Adeline","10-21":"Céline","10-22":"Élodie","10-23":"Jean de Capistran","10-24":"Florentin","10-25":"Crépin","10-26":"Dimitri","10-27":"Émeline","10-28":"Simon & Jude","10-29":"Narcisse","10-30":"Bienvenue","10-31":"Quentin","11-01":"Toussaint","11-02":"Défunts","11-03":"Hubert","11-04":"Charles","11-05":"Sylvie","11-06":"Bertille","11-07":"Carine","11-08":"Geoffroy","11-09":"Théodore","11-10":"Léon","11-11":"Armistice / Martin","11-12":"Christian","11-13":"Brice","11-14":"Sidoine","11-15":"Albert","11-16":"Marguerite","11-17":"Élisabeth","11-18":"Aude","11-19":"Tanguy","11-20":"Edmond","11-21":"Présentation de Marie","11-22":"Cécile","11-23":"Clément","11-24":"Flora","11-25":"Catherine","11-26":"Delphine","11-27":"Séverin","11-28":"Jacques de la M.","11-29":"Saturnin","11-30":"André","12-01":"Florence","12-02":"Viviane","12-03":"François-Xavier","12-04":"Barbara","12-05":"Gérald","12-06":"Nicolas","12-07":"Ambroise","12-08":"Immaculée Conception","12-09":"Pierre Fourier","12-10":"Romaric","12-11":"Daniel","12-12":"Jeanne F.-C.","12-13":"Lucie","12-14":"Odile","12-15":"Ninon","12-16":"Alice","12-17":"Gaël","12-18":"Gatien","12-19":"Urbain","12-20":"Abraham","12-21":"Pierre C.","12-22":"Françoise-Xavière","12-23":"Armand","12-24":"Adèle","12-25":"Noël","12-26":"Étienne","12-27":"Jean","12-28":"Saints Innocents","12-29":"David","12-30":"Roger","12-31":"Sylvestre"};
@@ -132,6 +149,12 @@ function frToIso(s){
 function isoToFr(iso){
   const m=(iso||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
   return m ? `${m[3]}/${m[2]}/${m[1]}` : '';
+}
+function waLink(tel){
+  let d=(tel||'').replace(/\D/g,'');
+  if(!d) return null;
+  if(d.startsWith('0')) d='33'+d.slice(1);   // France : 0X… -> 33X…
+  return 'https://wa.me/'+d;
 }
 function mmdd(d){ return d? d.slice(5,10):''; }
 function parseD(d){ return d? new Date(d+'T00:00:00') : null; }
@@ -599,22 +622,35 @@ async function majSortie(id){
   toast('Modifié ✓'); openSortie(id);
 }
 
-function openSuggestions(sid){
+let SUGG={mode:'todo',voiture:0};
+function openSuggestions(sid){ SUGG={mode:'todo',voiture:0}; renderSuggModal(sid); }
+function suggList(sid){
   const partIds=partsOf(sid).map(p=>p.membreId);
   const done=new Set(arr(CACHE.faites).filter(f=>partIds.includes(f.membreId)).map(f=>f.randoId));
-  let list=arr(CACHE.randos).filter(r=>!done.has(r.id))
-    .sort((a,b)=>faitesOf(a.id).length-faitesOf(b.id).length || (a.temps_voiture_min||0)-(b.temps_voiture_min||0));
-  openModal(`
-    <h3>💡 Suggestions</h3>
-    <p class="mini-note" style="text-align:left;padding:0 0 6px">Randos que <b>personne parmi les inscrits</b> n'a encore faite. Filtre par temps de voiture :</p>
-    <div class="filters" style="margin:0 -4px 12px;border:none;padding:0">
-      ${[[30,'≤ 30 min'],[60,'≤ 1h'],[90,'≤ 1h30'],[150,'≤ 2h30']].map(([v,l])=>`<span class="fchip" onclick="filtSugg('${sid}',${v},this)">${l}</span>`).join('')}
-      <span class="fchip on" onclick="filtSugg('${sid}',0,this)">Toutes</span>
-    </div>
-    <div id="sugg-list">${suggHtml(sid,list)}</div>`);
+  let list=arr(CACHE.randos);
+  if(SUGG.mode==='todo') list=list.filter(r=>!done.has(r.id));
+  else if(SUGG.mode==='done') list=list.filter(r=>done.has(r.id));
+  if(SUGG.voiture) list=list.filter(r=>(r.temps_voiture_min||999)<=SUGG.voiture);
+  list.sort((a,b)=>faitesOf(a.id).length-faitesOf(b.id).length || (a.temps_voiture_min||0)-(b.temps_voiture_min||0));
+  return list;
 }
+function renderSuggModal(sid){
+  const modes=[['todo','✨ Jamais faites'],['all','Toutes'],['done','✓ Déjà faites']];
+  const voits=[[0,'🚗 Toutes durées'],[30,'≤30min'],[60,'≤1h'],[90,'≤1h30'],[150,'≤2h30']];
+  openModal(`
+    <h3>💡 Choisir une rando</h3>
+    <p class="mini-note" style="text-align:left;padding:0 0 8px">Pour la sortie. Par défaut : les randos que <b>personne parmi les inscrits</b> n'a faites.</p>
+    <div class="filters" style="margin:0 -4px 8px;border:none;padding:0">
+      ${modes.map(([v,l])=>`<span class="fchip ${SUGG.mode===v?'on':''}" onclick="setSugg('${sid}','mode','${v}')">${l}</span>`).join('')}
+    </div>
+    <div class="filters" style="margin:0 -4px 12px;border:none;padding:0">
+      ${voits.map(([v,l])=>`<span class="fchip ${SUGG.voiture===v?'on':''}" onclick="setSugg('${sid}','voiture',${v})">${l}</span>`).join('')}
+    </div>
+    <div id="sugg-list">${suggHtml(sid,suggList(sid))}</div>`);
+}
+function setSugg(sid,key,val){ SUGG[key]=val; renderSuggModal(sid); }
 function suggHtml(sid,list){
-  if(!list.length) return '<div class="empty"><div class="e-ic">🎉</div><p>Tout a déjà été fait par le groupe !<br>Ajoutez de nouvelles randos.</p></div>';
+  if(!list.length) return '<div class="empty"><div class="e-ic">🤷</div><p>Aucune rando avec ces filtres.<br>Change le filtre ci-dessus.</p></div>';
   return list.map(r=>`<div class="sugg">
     <div class="n">${esc(r.nom)}</div>
     <div class="m">${[r.massif||r.region,r.temps_voiture_min!=null?`🚗 ${r.temps_voiture_min} min`:'',r.denivele!=null?`⛰️ ${r.denivele} m`:'',r.difficulte].filter(Boolean).join(' · ')}</div>
@@ -622,15 +658,6 @@ function suggHtml(sid,list){
       <button class="btn btn-sm" onclick="choisirRando('${sid}','${r.id}')">✓ Choisir</button>
       <button class="btn btn-ghost btn-sm" onclick="openRando('${r.id}')">Détails</button>
     </div></div>`).join('');
-}
-function filtSugg(sid,max,el){
-  document.querySelectorAll('#modal-body .fchip').forEach(c=>c.classList.remove('on')); el.classList.add('on');
-  const partIds=partsOf(sid).map(p=>p.membreId);
-  const done=new Set(arr(CACHE.faites).filter(f=>partIds.includes(f.membreId)).map(f=>f.randoId));
-  let list=arr(CACHE.randos).filter(r=>!done.has(r.id));
-  if(max) list=list.filter(r=>(r.temps_voiture_min||999)<=max);
-  list.sort((a,b)=>faitesOf(a.id).length-faitesOf(b.id).length || (a.temps_voiture_min||0)-(b.temps_voiture_min||0));
-  $('sugg-list').innerHTML=suggHtml(sid,list);
 }
 async function choisirRando(sid,rid){
   await DB.update('sorties/'+sid,{randoId:rid}); toast('Rando choisie ! 🥾'); openSortie(sid);
@@ -978,12 +1005,16 @@ function renderMembres(){
     ${online.length?`<div class="online-row">${online.map(m=>`<span class="online-pill"><span class="dot-online"></span>${esc(m.prenom)}</span>`).join('')}</div>`:''}
     ${ms.map(m=>{
       const a=age(m.date_naissance); const bd=m.date_naissance&&mmdd(m.date_naissance)===key; const on=isOnline(m.id);
+      const wa=m.telephone?waLink(m.telephone):null; const canDel=ME&&(ME.isAdmin||m.id===ME.id);
       return `<div class="membre"><span class="av-wrap">${avatar(m,52)}${on?'<span class="dot-online"></span>':''}</span>
         <div style="flex:1;min-width:0">
           <div class="membre-nom">${esc(m.prenom)} ${esc(m.nom||'')} ${bd?'🎂':''}${m.isAdmin?'<span class="chip chip-sun" style="font-size:10px;padding:2px 7px">admin</span>':''}</div>
-          <div class="membre-det">${a!=null?a+' ans · ':''}${m.telephone?`<a href="tel:${esc(m.telephone)}">📞 ${esc(m.telephone)}</a>`:'pas de téléphone'}</div>
+          ${m.date_naissance?`<div class="membre-det">🎂 ${isoToFr(m.date_naissance)}${a!=null?` · ${a} ans`:''}</div>`:''}
+          <div class="membre-det">${m.telephone?`<a href="tel:${esc(m.telephone)}">📞 ${esc(m.telephone)}</a>${wa?` &nbsp; <a href="${wa}" target="_blank" rel="noopener" style="color:#1faa53">💬 WhatsApp</a>`:''}`:'pas de téléphone'}</div>
           <div class="membre-det">🥾 ${arr(CACHE.faites).filter(f=>f.membreId===m.id).length} randos faites${on?' · <span style="color:var(--green-d)">en ligne</span>':''}</div>
-        </div></div>`;
+        </div>
+        ${canDel?`<button title="Supprimer le profil" onclick="supprMembreTeam('${m.id}','${jsStr(m.prenom)}')" style="flex-shrink:0;width:38px;height:38px;border-radius:50%;border:none;background:#fee2e2;color:#dc2626;font-size:16px;cursor:pointer">🗑️</button>`:''}
+      </div>`;
     }).join('')}
     <div style="height:14px"></div>`;
 }
@@ -1025,6 +1056,7 @@ function renderReglages(){
     <div class="card">
       <div class="card-t">ℹ️ État</div>
       <p class="mini-note" style="text-align:left;padding:0">
+        🔒 <b style="color:var(--green-d)">Application sécurisée</b> : accès par code du groupe + connexion privée chiffrée (HTTPS).<br>
         Données partagées : ${mode?'<b style="color:var(--green-d)">✅ Firebase (tout le monde voit la même chose)</b>':'<span class="badge-mode">⚠️ Mode local (test, ce téléphone seulement)</span><br>Pour partager avec les amis, configure Firebase (voir INSTALLATION.md).'}
       </p>
     </div>
@@ -1076,6 +1108,14 @@ function openGestionMembres(){
     <p class="mini-note" style="text-align:left">⭐ = passer admin · 🗑️ = retirer du groupe</p>`);
 }
 async function supprMembre(id,nom){ if(!confirm('Retirer '+nom+' du groupe ?')) return; await DB.remove('membres/'+id); toast('Membre retiré'); openGestionMembres(); }
+async function supprMembreTeam(id,prenom){
+  const self=id===(ME&&ME.id);
+  if(!confirm((self?'Supprimer TON profil':'Supprimer le profil de '+prenom)+' ?\nC\'est définitif.')) return;
+  await DB.remove('membres/'+id);
+  try{ await DB.remove('pushSubs/'+id); }catch(e){}
+  if(self){ localStorage.removeItem('tr_me'); location.reload(); return; }
+  toast('Profil supprimé'); renderMembres();
+}
 async function promo(id){ await DB.update('membres/'+id,{isAdmin:true}); toast('Nouveau admin ⭐'); openGestionMembres(); }
 
 /* ════════════════════════════════  START  ════════════════════════════════ */
@@ -1088,13 +1128,13 @@ window.openSortie=openSortie; window.openCreerSortie=openCreerSortie; window.cre
 window.addPhotosToSortie=addPhotosToSortie; window.openPhoto=openPhoto; window.deletePhoto=deletePhoto;
 window.rejoindreSortie=rejoindreSortie; window.quitterSortie=quitterSortie; window.supprSortie=supprSortie;
 window.openEditSortie=openEditSortie; window.majSortie=majSortie;
-window.openSuggestions=openSuggestions; window.filtSugg=filtSugg; window.choisirRando=choisirRando;
+window.openSuggestions=openSuggestions; window.setSugg=setSugg; window.choisirRando=choisirRando;
 window.openRando=openRando; window.openCreerRando=openCreerRando; window.openEditRando=openEditRando;
 window.saveRando=saveRando; window.importDepuisLien=importDepuisLien;
 window.majSearch=majSearch; window.setRF=setRF; window.toggleRF=toggleRF;
 window.openMarquerFaite=openMarquerFaite; window.marquerFaite=marquerFaite; window.retirerFaite=retirerFaite; window.supprRando=supprRando;
 window.openEditProfil=openEditProfil; window.openCodeGroupe=openCodeGroupe; window.openGestionMembres=openGestionMembres;
-window.supprMembre=supprMembre; window.promo=promo; window.changerProfil=changerProfil;
+window.supprMembre=supprMembre; window.supprMembreTeam=supprMembreTeam; window.promo=promo; window.changerProfil=changerProfil;
 window.sendMessage=sendMessage; window.supprMessage=supprMessage; window.quickToggleFaite=quickToggleFaite;
 window.enableNotifs=enableNotifs;
 
