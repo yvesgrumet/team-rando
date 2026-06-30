@@ -998,7 +998,7 @@ function startPresence(){
 }
 
 /* ── Canaux (Tchat / Sortie / Rando) ── */
-let MTAB='general', MCHAN='general', _forceChan=false;
+let MTAB='general', MCHAN='general', _forceChan=false, _lastChatKey='';
 const chanOf   = m => m.channel || 'general';
 const chanMsgs = chan => msgsArr().filter(m=>chanOf(m)===chan);
 function unreadInChan(chan){ if(!ME) return 0; return chanMsgs(chan).filter(m=>m.membreId!==ME.id && !(m.vu&&m.vu[ME.id])).length; }
@@ -1050,45 +1050,68 @@ function renderMessages(){
       ${tabs.map(([v,l])=>{const u=tabUnread(v); const isLast=lastTab===v&&MTAB!==v; return `<span class="fchip ${MTAB===v?'on':''}${isLast?' last-chan':''}" onclick="setMTab('${v}')">${l}${u?` <span class="disc-badge" style="display:inline-flex;height:17px;min-width:17px;font-size:10px">${u}</span>`:''}</span>`;}).join('')}
     </div>
     ${inner}`;
-  if(ac) scrollMsgsBottom();
+  if(ac){ const key=ac+':'+chanMsgs(ac).length; const grow=key!==_lastChatKey; _lastChatKey=key; scrollMsgsBottom(grow); }
   const inp=$('msg-input'); if(inp){ inp.value=keepVal; if(keepFocus) inp.focus(); }
   markMessagesRead(null); // on est dans la messagerie → tout est considéré vu (efface le badge)
 }
-function scrollMsgsBottom(){
-  // On garde l'en-tête + les onglets visibles : seule .msg-list défile (hauteur bornée),
-  // et on la positionne sur le dernier message.
+function scrollMsgsBottom(scroll){
+  // On garde l'en-tête + les onglets visibles : seule .msg-list défile (hauteur bornée).
   const ml=$('msg-list'); if(!ml) return;
-  window.scrollTo(0,0);
+  if(scroll) window.scrollTo(0,0);
   const apply=()=>{
+    ml.style.minHeight='0';   // sinon le min-height CSS écrase la hauteur et le dernier message passe sous la barre
     const top=ml.getBoundingClientRect().top;
     const bar=document.querySelector('.msg-bar'); const barH=bar?bar.offsetHeight:62;
     const navH=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h'))||62;
-    const h=window.innerHeight - top - barH - navH - 18;
+    const h=window.innerHeight - top - barH - navH - 14;
     ml.style.height=Math.max(160,h)+'px';
     ml.style.overflowY='auto';
-    ml.style.paddingBottom='14px';
-    ml.scrollTop=ml.scrollHeight;
+    ml.style.paddingBottom='10px';
+    if(scroll) ml.scrollTop=ml.scrollHeight;
   };
   requestAnimationFrame(()=>{ apply(); requestAnimationFrame(apply); });
   setTimeout(apply,150); setTimeout(apply,450);
-  ml.querySelectorAll('img').forEach(im=>{ if(!im.complete) im.addEventListener('load', apply, {once:true}); });
+  if(scroll) ml.querySelectorAll('img').forEach(im=>{ if(!im.complete) im.addEventListener('load', ()=>{ apply(); }, {once:true}); });
 }
 function chatBlock(chan){
   const list=chanMsgs(chan);
   const head = chan==='general' ? '' : `<div class="chat-head"><button class="btn btn-ghost btn-sm" onclick="backToList()">←</button> <b>${esc(chanTitle(chan))}</b></div>`;
   return `${head}
     <div id="msg-list" class="msg-list">${list.length?list.map(msgBubble).join(''):`<div class="empty"><div class="e-ic">💬</div><p>${chan==='general'?'Lance la discussion avec la team !':'Aucun message ici.<br>Écris le premier !'}</p></div>`}</div>
-    <div id="emoji-pop" class="emoji-pop" style="display:none">${EMOJIS.map(e=>`<button type="button" class="emoji-btn" onclick="addEmoji('${e}')">${e}</button>`).join('')}</div>
     <div class="msg-bar">
       <button class="msg-photo" onclick="sendPhotoMsg()" aria-label="Envoyer une photo">📷</button>
-      <button class="msg-photo" onclick="toggleEmoji()" aria-label="Emoji">😊</button>
       <input id="msg-input" class="msg-input" placeholder="Écris un message…" autocomplete="off" onkeydown="if(event.key==='Enter')sendMessage()">
       <button class="msg-send" onclick="sendMessage()" aria-label="Envoyer">➤</button>
     </div>`;
 }
-const EMOJIS=['😀','😂','😍','😎','😅','😉','🙂','😘','🤩','😴','😱','🤙','👍','👏','🙏','💪','🔥','🎉','❤️','✅','❌','🥾','⛰️','🏔️','🌄','🌲','☀️','🌧️','❄️','🌈','🚗','🍻','☕','📸','🗺️','⏰'];
-function toggleEmoji(){ const p=$('emoji-pop'); if(!p) return; p.style.display = (p.style.display==='none'||!p.style.display)?'flex':'none'; }
-function addEmoji(e){ const inp=$('msg-input'); if(!inp) return; const s=inp.selectionStart, t=inp.value; if(typeof s==='number'){ inp.value=t.slice(0,s)+e+t.slice(inp.selectionEnd); const p=s+e.length; inp.setSelectionRange(p,p); } else inp.value=t+e; inp.focus(); }
+/* ── Réactions emoji sur un message ── */
+const REACTS=['👍','❤️','😂','😮','😢','🙏','🔥','👏','💪','🥾'];
+function openReact(id){
+  openModal(`<div style="text-align:center">
+    <div style="font-family:'Fredoka',sans-serif;font-size:16px;margin-bottom:12px">Réagir au message</div>
+    <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap">
+      ${REACTS.map(e=>`<button type="button" class="emoji-btn" style="font-size:30px" onclick="toggleReact('${id}','${e}')">${e}</button>`).join('')}
+    </div>
+    <button class="btn btn-ghost btn-full btn-sm" style="margin-top:12px" onclick="closeModalNow()">Annuler</button>
+  </div>`);
+}
+async function toggleReact(id,e){
+  closeModalNow();
+  const m=CACHE.messages[id]; if(!m||!ME) return;
+  const cur=(m.reactions&&m.reactions[ME.id])||'';
+  if(cur===e) await DB.remove('messages/'+id+'/reactions/'+ME.id);
+  else await DB.set('messages/'+id+'/reactions/'+ME.id, e);
+}
+function whoReacted(id,em){
+  const m=CACHE.messages[id]; if(!m||!m.reactions) return;
+  const names=Object.entries(m.reactions).filter(([,e])=>e===em).map(([mid])=>{const x=getM(mid);return x?esc(x.prenom):'?';});
+  toast(em+'  '+names.join(', '));
+}
+function reactsHtml(m){
+  const r=m.reactions||{}; const ids=Object.keys(r); if(!ids.length) return '';
+  const groups={}; ids.forEach(mid=>{ const e=r[mid]; (groups[e]=groups[e]||[]).push(mid); });
+  return `<div class="msg-reacts">${Object.entries(groups).map(([e,list])=>`<span class="react-chip${ME&&list.indexOf(ME.id)>=0?' mine':''}" onclick="event.stopPropagation();whoReacted('${m.id}','${e}')">${e}${list.length>1?' '+list.length:''}</span>`).join('')}</div>`;
+}
 function discList(kind){
   if(kind==='sortie'){
     const ss=arr(CACHE.sorties).sort((a,b)=>b.date.localeCompare(a.date));
@@ -1117,12 +1140,15 @@ function msgBubble(m){
   const canDel=me||(ME&&ME.isAdmin);
   return `<div class="msg-row ${me?'mine':''}">
     ${me?'':avatar(auth,32)}
-    <div class="msg-bub ${me?'mine':''}">
-      ${me?'':`<div class="msg-auth">${esc(auth?auth.prenom:'?')}</div>`}
-      ${m.img?`<img class="msg-img" src="${m.img}" alt="" onclick="openImg('${m.id}')">`:''}
-      ${m.texte?`<div class="msg-txt">${esc(m.texte)}</div>`:''}
-      <div class="msg-meta">${hh}${canDel?` · <span class="msg-del" onclick="supprMessage('${m.id}')">supprimer</span>`:''}</div>
-      ${seenTxt}
+    <div class="msg-col">
+      <div class="msg-bub ${me?'mine':''}" onclick="openReact('${m.id}')" title="Appuie pour réagir">
+        ${me?'':`<div class="msg-auth">${esc(auth?auth.prenom:'?')}</div>`}
+        ${m.img?`<img class="msg-img" src="${m.img}" alt="" onclick="event.stopPropagation();openImg('${m.id}')">`:''}
+        ${m.texte?`<div class="msg-txt">${esc(m.texte)}</div>`:''}
+        <div class="msg-meta">${hh}${canDel?` · <span class="msg-del" onclick="event.stopPropagation();supprMessage('${m.id}')">supprimer</span>`:''}</div>
+        ${seenTxt}
+      </div>
+      ${reactsHtml(m)}
     </div>
   </div>`;
 }
@@ -1134,7 +1160,7 @@ function notifyMsg(chan,t){
 async function sendMessage(){
   const inp=$('msg-input'); if(!inp) return; const t=inp.value.trim(); if(!t) return;
   const chan=activeChan()||'general';
-  inp.value=''; const ep=$('emoji-pop'); if(ep) ep.style.display='none'; maybeEnableNotifs();
+  inp.value=''; maybeEnableNotifs();
   await DB.push('messages',{ membreId:ME.id, channel:chan, texte:t, createdAt:new Date().toISOString(), vu:{[ME.id]:true} });
   notifyMsg(chan,t);
 }
