@@ -64,7 +64,7 @@
 <!-- ░░ MODAL ░░ -->
 <div id="modal-bg" class="modal-bg" onclick="closeModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-grip"></div>
+    <div class="modal-bar"><div class="modal-grip"></div><button class="modal-close" onclick="closeModalNow()" aria-label="Fermer">✕</button></div>
     <div id="modal-body"></div>
   </div>
 </div>

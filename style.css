@@ -81,7 +81,7 @@ h1,h2,h3,.fred{font-family:'Fredoka',sans-serif;font-weight:600;}
 
 /* ── Navigation bas ── */
 .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;
-  height:var(--nav-h);background:#fff;border-top:1px solid var(--line);display:flex;z-index:100;
+  height:var(--nav-h);background:#fff;border-top:1px solid var(--line);display:flex;z-index:400;
   box-shadow:0 -4px 20px rgba(20,80,120,.1);padding-bottom:env(safe-area-inset-bottom)}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
   border:none;background:none;cursor:pointer;color:var(--muted);font-size:9.5px;font-weight:800;
@@ -207,10 +207,14 @@ h1,h2,h3,.fred{font-family:'Fredoka',sans-serif;font-weight:600;}
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(15,41,59,.5);z-index:300;
   align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
 .modal-bg.open{display:flex}
-.modal{background:#fff;border-radius:26px 26px 0 0;width:100%;max-width:480px;max-height:92dvh;
-  overflow-y:auto;padding:22px 18px calc(22px + env(safe-area-inset-bottom));animation:up .3s cubic-bezier(.2,1,.3,1)}
+.modal{background:#fff;border-radius:26px 26px 0 0;width:100%;max-width:480px;max-height:calc(92dvh - var(--nav-h));
+  overflow-y:auto;padding:0 18px calc(var(--nav-h) + 22px + env(safe-area-inset-bottom));animation:up .3s cubic-bezier(.2,1,.3,1)}
 @keyframes up{from{transform:translateY(100%)}to{transform:none}}
-.modal-grip{width:42px;height:5px;background:var(--line);border-radius:3px;margin:0 auto 16px}
+.modal-bar{position:sticky;top:0;background:#fff;margin:0 -18px 10px;padding:12px 14px 8px;z-index:6;border-radius:26px 26px 0 0}
+.modal-grip{width:42px;height:5px;background:var(--line);border-radius:3px;margin:0 auto}
+.modal-close{position:absolute;right:12px;top:8px;width:34px;height:34px;border-radius:50%;border:none;
+  background:#eef2f7;color:#33485c;font-size:15px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.modal-close:active{transform:scale(.92)}
 .modal h3{font-family:'Fredoka',sans-serif;font-size:21px;font-weight:600;margin-bottom:14px}
 
 /* ── Détail (modal) en-tête ── */

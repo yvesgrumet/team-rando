@@ -416,6 +416,7 @@ function enterApp(){
 
 /* ════════════════════════════════  NAV  ════════════════════════════════ */
 function navigate(v){
+  if($('modal-bg').classList.contains('open') && !_forceChan) closeModalNow(); // libère la nav quand une modale est ouverte
   if(v==='messages'){ if(_forceChan) _forceChan=false; else gotoLastConversation(); }
   CURRENT=v;
   document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
