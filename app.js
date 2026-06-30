@@ -683,18 +683,15 @@ function renderSuggModal(sid){
   const voits=[[0,'🚗 Toutes durées'],[30,'≤30min'],[60,'≤1h'],[90,'≤1h30'],[150,'≤2h30']];
   openModal(`
     <h3>💡 Choisir une rando</h3>
-    <p class="mini-note" style="text-align:left;padding:0 0 8px">Pour la sortie. Par défaut : les randos que <b>personne parmi les inscrits</b> n'a faites.</p>
+    <button class="btn btn-sun btn-full btn-sm" style="margin-bottom:10px" onclick="addRandoForSortie('${sid}')">➕ Ajouter une rando absente (lien Visorando…)</button>
+    <p class="mini-note" style="text-align:left;padding:0 0 8px">Ou choisis dans le catalogue. Par défaut : les randos que <b>personne parmi les inscrits</b> n'a faites.</p>
     <div class="filters" style="margin:0 -4px 8px;border:none;padding:0">
       ${modes.map(([v,l])=>`<span class="fchip ${SUGG.mode===v?'on':''}" onclick="setSugg('${sid}','mode','${v}')">${l}</span>`).join('')}
     </div>
     <div class="filters" style="margin:0 -4px 12px;border:none;padding:0">
       ${voits.map(([v,l])=>`<span class="fchip ${SUGG.voiture===v?'on':''}" onclick="setSugg('${sid}','voiture',${v})">${l}</span>`).join('')}
     </div>
-    <div id="sugg-list">${suggHtml(sid,suggList(sid))}</div>
-    <div style="border-top:1px solid var(--line);margin-top:12px;padding-top:12px">
-      <p class="mini-note" style="text-align:left;padding:0 0 8px">Pas dans la liste ? Ajoute-la avec son/ses lien(s) Visorando :</p>
-      <button class="btn btn-sun btn-full btn-sm" onclick="addRandoForSortie('${sid}')">➕ Ajouter une rando absente du catalogue</button>
-    </div>`);
+    <div id="sugg-list">${suggHtml(sid,suggList(sid))}</div>`);
 }
 function setSugg(sid,key,val){ SUGG[key]=val; renderSuggModal(sid); }
 function suggHtml(sid,list){
