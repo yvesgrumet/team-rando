@@ -486,7 +486,11 @@ function reglerTeamPhoto(){
 /* ════════════════════════════════  SORTIES  ════════════════════════════════ */
 function sortieCard(s){
   const t=parseD(s.date); const r=s.randoId?getR(s.randoId):null;
-  const nom=r?r.nom:(s.titre||'Rando à choisir');
+  const opts=sortieOptions(s);
+  let nom;
+  if(r) nom=r.nom;
+  else if(opts.length){ const lead=opts.map(rid=>({rid,n:votersFor(s,rid).length})).sort((a,b)=>b.n-a.n)[0]; const lr=lead?getR(lead.rid):null; nom=lr?lr.nom:'Sondage rando'; }
+  else nom=s.titre||'Rando à choisir';
   const org=getM(s.organisateurId);
   const np=partsOf(s.id).length;
   return `<div class="sortie" onclick="openSortie('${s.id}')">
@@ -501,7 +505,8 @@ function sortieCard(s){
           <span class="chip">👥 ${np}</span>
           ${s.nbPhotos?`<span class="chip">📷 ${s.nbPhotos}</span>`:''}
           ${r&&r.temps_voiture_min!=null?`<span class="chip chip-sky">⏱️ ${fmtVoiture(r.temps_voiture_min)} route</span>`:''}
-          ${!r?'<span class="chip chip-sun">💡 rando à définir</span>':''}
+          ${!r&&opts.length?`<span class="chip chip-sun">🗳️ sondage · ${opts.length} randos</span>`:''}
+          ${!r&&!opts.length?'<span class="chip chip-sun">💡 rando à définir</span>':''}
         </div>
       </div>
     </div></div>`;
@@ -585,7 +590,11 @@ function openSortie(id){
   openModal(`
     <div class="dhead"><div class="s">${fmtLong(s.date)}</div><div class="t">${esc(nom)}</div><div class="s">Organisé par ${esc(org?org.prenom:'?')}</div></div>
     ${covoit}
-    ${r?`<div class="chips" style="margin-bottom:12px">${randoChips(r)}</div>${r.depart?`<p class="mini-note" style="text-align:left;padding:0 0 10px">📍 Départ rando : <b>${esc(r.depart)}</b>${r.massif||r.region?` · massif ${esc(r.massif||r.region)}`:''}</p>`:''}${siteButtons(r)}`:`<div class="sugg" style="margin-bottom:12px">⚠️ La rando n'est pas encore choisie. Inscrivez-vous puis touchez <b>Suggestions</b>.</div>`}
+    ${r?`<div class="poll-final">✅ Rando retenue${sortieOptions(s).length>1?` · ${sortieOptions(s).length} proposées au vote`:''}</div>
+        <div class="chips" style="margin-bottom:12px">${randoChips(r)}</div>${r.depart?`<p class="mini-note" style="text-align:left;padding:0 0 10px">📍 Départ rando : <b>${esc(r.depart)}</b>${r.massif||r.region?` · massif ${esc(r.massif||r.region)}`:''}</p>`:''}${siteButtons(r)}
+        ${isOrga?`<button class="btn btn-ghost btn-sm" style="margin-bottom:12px" onclick="remettreVote('${id}')">↩︎ Remettre au vote</button>`:''}`
+      : sortieOptions(s).length ? sondageHtml(id)
+      : `<div class="sugg" style="margin-bottom:12px">⚠️ Aucune rando proposée. Inscris-toi puis touche <b>💡 Suggestions</b> pour en proposer une ou plusieurs au vote.</div>`}
     ${s.notes?`<div class="card" style="margin:0 0 12px"><div class="card-t">ℹ️ Infos</div>${esc(s.notes)}</div>`:''}
     <div class="card-t" style="padding:0 0 4px">👥 Participants (${parts.length})</div>
     <div style="margin-bottom:14px">${partHtml}</div>
@@ -701,16 +710,74 @@ function renderSuggModal(sid){
 function setSugg(sid,key,val){ SUGG[key]=val; renderSuggModal(sid); }
 function suggHtml(sid,list){
   if(!list.length) return '<div class="empty"><div class="e-ic">🤷</div><p>Aucune rando avec ces filtres.<br>Change le filtre ci-dessus.</p></div>';
-  return list.map(r=>`<div class="sugg">
+  const s=getS(sid); const proposed=new Set(Object.keys((s&&s.options)||{}));
+  return list.map(r=>{ const isProp=proposed.has(r.id);
+    return `<div class="sugg">
     <div class="n">${esc(r.nom)}</div>
     <div class="m">${[r.massif||r.region,r.temps_voiture_min!=null?`🚗 ${fmtVoiture(r.temps_voiture_min)}`:'',r.denivele!=null?`⛰️ ${r.denivele} m`:'',r.difficulte].filter(Boolean).join(' · ')}</div>
     <div class="chips" style="margin-top:9px">
-      <button class="btn btn-sm" onclick="choisirRando('${sid}','${r.id}')">✓ Choisir</button>
+      ${isProp?'<span class="chip chip-green">✓ Proposée</span>':`<button class="btn btn-sm" onclick="proposerRando('${sid}','${r.id}')">🗳️ Proposer au vote</button>`}
+      <button class="btn btn-ghost btn-sm" onclick="choisirRando('${sid}','${r.id}')">Choisir direct</button>
       <button class="btn btn-ghost btn-sm" onclick="openRando('${r.id}')">Détails</button>
-    </div></div>`).join('');
+    </div></div>`; }).join('');
 }
 async function choisirRando(sid,rid){
   await DB.update('sorties/'+sid,{randoId:rid}); toast('Rando choisie ! 🥾'); openSortie(sid);
+}
+
+/* ── Sondage : plusieurs randos proposées pour une sortie, on vote ── */
+const sortieOptions = s => Object.keys((s&&s.options)||{}).filter(rid=>getR(rid));
+function votersFor(s,rid){ const v=(s&&s.votes)||{}; return Object.keys(v).filter(mid=>v[mid]&&v[mid][rid]); }
+function iVoted(s,rid){ return !!(ME && s.votes && s.votes[ME.id] && s.votes[ME.id][rid]); }
+async function proposerRando(sid,rid){
+  await DB.set('sorties/'+sid+'/options/'+rid, true);
+  toast('Proposée au vote 🗳️'); renderSuggModal(sid);
+}
+async function voteRando(sid,rid){
+  const s=getS(sid); if(!s||!ME) return;
+  const p='sorties/'+sid+'/votes/'+ME.id+'/'+rid;
+  if(iVoted(s,rid)) await DB.remove(p); else await DB.set(p, true);
+  openSortie(sid);
+}
+async function validerRando(sid,rid){
+  await DB.update('sorties/'+sid,{randoId:rid}); toast('Rando retenue ! 🥾'); openSortie(sid);
+}
+async function remettreVote(sid){
+  await DB.update('sorties/'+sid,{randoId:null}); toast('Remise au vote 🗳️'); openSortie(sid);
+}
+async function retirerOption(sid,rid){
+  if(!confirm('Retirer cette rando du sondage ?')) return;
+  await DB.remove('sorties/'+sid+'/options/'+rid);
+  // nettoie les votes pour cette option
+  const s=getS(sid); const v=(s&&s.votes)||{};
+  for(const mid of Object.keys(v)){ if(v[mid]&&v[mid][rid]) await DB.remove('sorties/'+sid+'/votes/'+mid+'/'+rid); }
+  openSortie(sid);
+}
+function sondageHtml(sid){
+  const s=getS(sid); const opts=sortieOptions(s); if(!opts.length) return '';
+  const isOrga=s.organisateurId===ME.id||ME.isAdmin;
+  const counts=opts.map(rid=>({rid,n:votersFor(s,rid).length})).sort((a,b)=>b.n-a.n);
+  const max=Math.max(...counts.map(c=>c.n),0);
+  const rows=counts.map(({rid,n})=>{
+    const r=getR(rid); if(!r) return '';
+    const lead=n>0&&n===max; const mine=iVoted(s,rid);
+    const voters=votersFor(s,rid).map(mid=>{const m=getM(mid);return m?esc(m.prenom):'';}).filter(Boolean);
+    return `<div class="poll-opt${lead?' lead':''}">
+      <div class="poll-main">
+        <div class="poll-nom">${lead?'🏆 ':''}${esc(r.nom)}</div>
+        <div class="poll-meta">${[r.massif||r.region, r.temps_voiture_min!=null?'🚗 '+fmtVoiture(r.temps_voiture_min):'', r.difficulte].filter(Boolean).join(' · ')}</div>
+        ${voters.length?`<div class="poll-voters">👍 ${voters.join(', ')}</div>`:''}
+        ${isOrga?`<div class="poll-acts"><span class="poll-act" onclick="validerRando('${sid}','${rid}')">✓ retenir</span><span class="poll-act" onclick="retirerOption('${sid}','${rid}')">retirer</span></div>`:''}
+      </div>
+      <button class="poll-vote${mine?' on':''}" onclick="voteRando('${sid}','${rid}')"><span>${n}</span>${mine?'voté':'voter'}</button>
+    </div>`;
+  }).join('');
+  return `<div class="card" style="margin:0 0 12px">
+    <div class="card-t" style="font-size:15px">🗳️ Sondage : quelle rando ?</div>
+    <p class="mini-note" style="text-align:left;padding:0 0 8px">Touche « voter » sur les randos qui te vont (tu peux en choisir plusieurs). La plus choisie est en tête 🏆.</p>
+    ${rows}
+    <button class="btn btn-soft btn-full btn-sm" style="margin-top:6px" onclick="openSuggestions('${sid}')">➕ Proposer une autre rando</button>
+  </div>`;
 }
 
 /* ════════════════════════════════  RANDOS  ════════════════════════════════ */
@@ -970,7 +1037,7 @@ async function saveRando(id, forSortie){
   else {
     data.createdBy=ME.id; data.createdAt=new Date().toISOString();
     const nid=await DB.push('randos',data);
-    if(forSortie){ await DB.update('sorties/'+forSortie,{randoId:nid}); toast('Rando créée et choisie ! 🥾'); openSortie(forSortie); }
+    if(forSortie){ await DB.set('sorties/'+forSortie+'/options/'+nid, true); toast('Rando créée et proposée au vote 🗳️'); openSortie(forSortie); }
     else { toast('Rando ajoutée ! 🥾'); closeModalNow(); drawRandos(); }
   }
 }

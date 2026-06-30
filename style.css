@@ -237,6 +237,24 @@ h1,h2,h3,.fred{font-family:'Fredoka',sans-serif;font-weight:600;}
 .sugg .n{font-family:'Fredoka',sans-serif;font-size:16px;font-weight:600;color:var(--green-x)}
 .sugg .m{font-size:13px;color:var(--muted);font-weight:700;margin-top:3px}
 
+/* ── Sondage rando ── */
+.poll-final{display:inline-block;background:#e9f7ef;color:#0b7a52;border:1px solid #10b981;border-radius:12px;
+  padding:3px 10px;font-size:12.5px;font-weight:800;margin-bottom:8px}
+.poll-opt{display:flex;align-items:center;gap:10px;border:2px solid var(--line);border-radius:14px;
+  padding:10px 12px;margin-bottom:8px;background:#fff}
+.poll-opt.lead{border-color:#f59e0b;background:linear-gradient(135deg,#fffbeb,#fff)}
+.poll-main{flex:1;min-width:0}
+.poll-nom{font-family:'Fredoka',sans-serif;font-size:15px;font-weight:600;color:var(--ink)}
+.poll-meta{font-size:12.5px;color:var(--muted);font-weight:700;margin-top:2px}
+.poll-voters{font-size:12px;color:var(--green-d);font-weight:700;margin-top:4px;word-break:break-word}
+.poll-acts{display:flex;gap:10px;margin-top:6px}
+.poll-act{font-size:12px;font-weight:800;color:var(--sky-d);cursor:pointer;text-decoration:underline}
+.poll-vote{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  min-width:58px;border:2px solid var(--line);background:#f1f8fe;border-radius:13px;padding:7px 6px;
+  font-size:11.5px;font-weight:800;color:var(--ink);cursor:pointer;line-height:1.1}
+.poll-vote span{font-size:19px;font-family:'Fredoka',sans-serif}
+.poll-vote.on{background:var(--grad-head);color:#fff;border-color:transparent}
+
 /* ── Profil picker ── */
 .pick{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border:2px solid var(--line);
   border-radius:16px;background:#f8fcff;margin-bottom:9px;cursor:pointer;text-align:left;font-family:'Nunito'}
