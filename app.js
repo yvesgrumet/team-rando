@@ -1063,7 +1063,7 @@ function scrollMsgsBottom(){
     const top=ml.getBoundingClientRect().top;
     const bar=document.querySelector('.msg-bar'); const barH=bar?bar.offsetHeight:62;
     const navH=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h'))||62;
-    const h=window.innerHeight - top - barH - navH - 6;
+    const h=window.innerHeight - top - barH - navH - 18;
     ml.style.height=Math.max(160,h)+'px';
     ml.style.overflowY='auto';
     ml.style.paddingBottom='14px';
@@ -1078,12 +1078,17 @@ function chatBlock(chan){
   const head = chan==='general' ? '' : `<div class="chat-head"><button class="btn btn-ghost btn-sm" onclick="backToList()">←</button> <b>${esc(chanTitle(chan))}</b></div>`;
   return `${head}
     <div id="msg-list" class="msg-list">${list.length?list.map(msgBubble).join(''):`<div class="empty"><div class="e-ic">💬</div><p>${chan==='general'?'Lance la discussion avec la team !':'Aucun message ici.<br>Écris le premier !'}</p></div>`}</div>
+    <div id="emoji-pop" class="emoji-pop" style="display:none">${EMOJIS.map(e=>`<button type="button" class="emoji-btn" onclick="addEmoji('${e}')">${e}</button>`).join('')}</div>
     <div class="msg-bar">
       <button class="msg-photo" onclick="sendPhotoMsg()" aria-label="Envoyer une photo">📷</button>
+      <button class="msg-photo" onclick="toggleEmoji()" aria-label="Emoji">😊</button>
       <input id="msg-input" class="msg-input" placeholder="Écris un message…" autocomplete="off" onkeydown="if(event.key==='Enter')sendMessage()">
       <button class="msg-send" onclick="sendMessage()" aria-label="Envoyer">➤</button>
     </div>`;
 }
+const EMOJIS=['😀','😂','😍','😎','😅','😉','🙂','😘','🤩','😴','😱','🤙','👍','👏','🙏','💪','🔥','🎉','❤️','✅','❌','🥾','⛰️','🏔️','🌄','🌲','☀️','🌧️','❄️','🌈','🚗','🍻','☕','📸','🗺️','⏰'];
+function toggleEmoji(){ const p=$('emoji-pop'); if(!p) return; p.style.display = (p.style.display==='none'||!p.style.display)?'flex':'none'; }
+function addEmoji(e){ const inp=$('msg-input'); if(!inp) return; const s=inp.selectionStart, t=inp.value; if(typeof s==='number'){ inp.value=t.slice(0,s)+e+t.slice(inp.selectionEnd); const p=s+e.length; inp.setSelectionRange(p,p); } else inp.value=t+e; inp.focus(); }
 function discList(kind){
   if(kind==='sortie'){
     const ss=arr(CACHE.sorties).sort((a,b)=>b.date.localeCompare(a.date));
@@ -1129,7 +1134,7 @@ function notifyMsg(chan,t){
 async function sendMessage(){
   const inp=$('msg-input'); if(!inp) return; const t=inp.value.trim(); if(!t) return;
   const chan=activeChan()||'general';
-  inp.value=''; maybeEnableNotifs();
+  inp.value=''; const ep=$('emoji-pop'); if(ep) ep.style.display='none'; maybeEnableNotifs();
   await DB.push('messages',{ membreId:ME.id, channel:chan, texte:t, createdAt:new Date().toISOString(), vu:{[ME.id]:true} });
   notifyMsg(chan,t);
 }
