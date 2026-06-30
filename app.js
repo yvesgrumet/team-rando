@@ -1055,11 +1055,23 @@ function renderMessages(){
   markMessagesRead(null); // on est dans la messagerie → tout est considéré vu (efface le badge)
 }
 function scrollMsgsBottom(){
-  // La page (fenêtre) défile, pas .msg-list → on amène le bas de la conversation en vue
-  const go=()=>{ const el=document.scrollingElement||document.documentElement; window.scrollTo(0, el.scrollHeight); };
-  requestAnimationFrame(()=>{ go(); requestAnimationFrame(go); });
-  setTimeout(go,120); setTimeout(go,400);
-  const ml=$('msg-list'); if(ml) ml.querySelectorAll('img').forEach(im=>{ if(!im.complete) im.addEventListener('load', go, {once:true}); });
+  // On garde l'en-tête + les onglets visibles : seule .msg-list défile (hauteur bornée),
+  // et on la positionne sur le dernier message.
+  const ml=$('msg-list'); if(!ml) return;
+  window.scrollTo(0,0);
+  const apply=()=>{
+    const top=ml.getBoundingClientRect().top;
+    const bar=document.querySelector('.msg-bar'); const barH=bar?bar.offsetHeight:62;
+    const navH=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h'))||62;
+    const h=window.innerHeight - top - barH - navH - 6;
+    ml.style.height=Math.max(160,h)+'px';
+    ml.style.overflowY='auto';
+    ml.style.paddingBottom='14px';
+    ml.scrollTop=ml.scrollHeight;
+  };
+  requestAnimationFrame(()=>{ apply(); requestAnimationFrame(apply); });
+  setTimeout(apply,150); setTimeout(apply,450);
+  ml.querySelectorAll('img').forEach(im=>{ if(!im.complete) im.addEventListener('load', apply, {once:true}); });
 }
 function chatBlock(chan){
   const list=chanMsgs(chan);
