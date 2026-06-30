@@ -176,6 +176,7 @@ h1,h2,h3,.fred{font-family:'Fredoka',sans-serif;font-weight:600;}
 .fchip{white-space:nowrap;background:#f1f8fe;border:2px solid var(--line);border-radius:20px;
   padding:7px 14px;font-size:13.5px;font-weight:800;cursor:pointer;color:var(--ink);transition:all .15s}
 .fchip.on{background:var(--grad-head);color:#fff;border-color:transparent}
+.fchip.last-chan{border-color:#10b981;color:#10b981}
 
 /* ── Carte Rando ── */
 .rando{background:#fff;border-radius:18px;margin:12px 14px 0;border:1px solid var(--line);

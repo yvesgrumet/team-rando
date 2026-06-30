@@ -409,8 +409,11 @@ function updateBadges(){
   const nm=unreadMsgCount();
   setNavBadge('nav-badge-sorties', ns);
   setNavBadge('nav-badge-messages', nm);
-  const total=ns+nm;
-  if('setAppBadge' in navigator){ if(total>0) navigator.setAppBadge(total).catch(()=>{}); else navigator.clearAppBadge().catch(()=>{}); }
+  // Badge icône : seulement en arrière-plan (clearNotifs() l'efface à l'ouverture)
+  if(document.visibilityState!=='visible'){
+    const total=ns+nm;
+    if('setAppBadge' in navigator){ if(total>0) navigator.setAppBadge(total).catch(()=>{}); else navigator.clearAppBadge().catch(()=>{}); }
+  }
 }
 
 /* ════════════════════════════════  MÉTÉO  ════════════════════════════════ */
@@ -1011,8 +1014,18 @@ function chanTitle(chan){
   return '💬';
 }
 function activeChan(){ if(MTAB==='general') return 'general'; if(MCHAN && MCHAN!=='general') return MCHAN; return null; }
+function lastActivityTab(){
+  const msgs=msgsArr(); if(!msgs.length) return null;
+  const last=msgs.slice().sort((a,b)=>(a.createdAt||'').localeCompare(b.createdAt||'')).pop();
+  if(!last) return null;
+  const c=chanOf(last);
+  if(c==='general') return 'general';
+  if(c.startsWith('sortie_')) return 'sorties';
+  if(c.startsWith('rando_')) return 'randos';
+  return null;
+}
 function setMTab(tab){ MTAB=tab; MCHAN = tab==='general'?'general':null; renderMessages(); }
-function openChan(chan,tab){ MTAB=tab||MTAB; MCHAN=chan; if(CURRENT!=='messages') navigate('messages'); else renderMessages(); }
+function openChan(chan,tab){ closeModalNow(); MTAB=tab||MTAB; MCHAN=chan; if(CURRENT!=='messages') navigate('messages'); else renderMessages(); }
 function backToList(){ MCHAN=null; renderMessages(); }
 
 /* ── Vue Messages ── */
@@ -1022,15 +1035,16 @@ function renderMessages(){
   const ac=activeChan();
   const prev=$('msg-input'); const keepVal=prev?prev.value:''; const keepFocus=prev&&document.activeElement===prev;
   const inner = ac ? chatBlock(ac) : (MTAB==='sorties'?discList('sortie'):discList('rando'));
+  const lastTab=lastActivityTab();
   $('view-messages').innerHTML=`
     <div class="phead"><h2>💬 Messages</h2><div class="sub">${online.length} en ligne${online.length?' · '+online.map(m=>esc(m.prenom)).join(', '):''}</div></div>
     <div class="filters" style="position:sticky;top:0;z-index:16">
-      ${tabs.map(([v,l])=>{const u=tabUnread(v);return `<span class="fchip ${MTAB===v?'on':''}" onclick="setMTab('${v}')">${l}${u?` <span class="disc-badge" style="display:inline-flex;height:17px;min-width:17px;font-size:10px">${u}</span>`:''}</span>`;}).join('')}
+      ${tabs.map(([v,l])=>{const u=tabUnread(v); const isLast=lastTab===v&&MTAB!==v; return `<span class="fchip ${MTAB===v?'on':''}${isLast?' last-chan':''}" onclick="setMTab('${v}')">${l}${u?` <span class="disc-badge" style="display:inline-flex;height:17px;min-width:17px;font-size:10px">${u}</span>`:''}</span>`;}).join('')}
     </div>
     ${inner}`;
-  const ml=$('msg-list'); if(ml) ml.scrollTop=ml.scrollHeight;
+  setTimeout(()=>{ const ml=$('msg-list'); if(ml) ml.scrollTop=ml.scrollHeight; }, 0);
   const inp=$('msg-input'); if(inp){ inp.value=keepVal; if(keepFocus) inp.focus(); }
-  if(ac) markMessagesRead(ac);
+  if(ac) markMessagesRead(ac); else markMessagesRead(null);
 }
 function chatBlock(chan){
   const list=chanMsgs(chan);
