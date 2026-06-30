@@ -1050,9 +1050,16 @@ function renderMessages(){
       ${tabs.map(([v,l])=>{const u=tabUnread(v); const isLast=lastTab===v&&MTAB!==v; return `<span class="fchip ${MTAB===v?'on':''}${isLast?' last-chan':''}" onclick="setMTab('${v}')">${l}${u?` <span class="disc-badge" style="display:inline-flex;height:17px;min-width:17px;font-size:10px">${u}</span>`:''}</span>`;}).join('')}
     </div>
     ${inner}`;
-  setTimeout(()=>{ const ml=$('msg-list'); if(ml) ml.scrollTop=ml.scrollHeight; }, 0);
+  if(ac) scrollMsgsBottom();
   const inp=$('msg-input'); if(inp){ inp.value=keepVal; if(keepFocus) inp.focus(); }
   markMessagesRead(null); // on est dans la messagerie → tout est considéré vu (efface le badge)
+}
+function scrollMsgsBottom(){
+  // La page (fenêtre) défile, pas .msg-list → on amène le bas de la conversation en vue
+  const go=()=>{ const el=document.scrollingElement||document.documentElement; window.scrollTo(0, el.scrollHeight); };
+  requestAnimationFrame(()=>{ go(); requestAnimationFrame(go); });
+  setTimeout(go,120); setTimeout(go,400);
+  const ml=$('msg-list'); if(ml) ml.querySelectorAll('img').forEach(im=>{ if(!im.complete) im.addEventListener('load', go, {once:true}); });
 }
 function chatBlock(chan){
   const list=chanMsgs(chan);
