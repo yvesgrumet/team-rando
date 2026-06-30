@@ -146,6 +146,7 @@ const MOIS3=['jan','fév','mar','avr','mai','juin','juil','aoû','sep','oct','no
 
 function todayStr(){ const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; }
 function fmtH(h){ return h ? h.replace(':','h') : ''; }   // "08:00" -> "08h00"
+function fmtVoiture(m){ if(m==null) return ''; m=Math.round(m); if(m<60) return m+' min'; const h=Math.floor(m/60),mm=m%60; return h+'h'+(mm?String(mm).padStart(2,'0'):''); }  // 115 -> "1h55"
 // Saisie de date JJ/MM/AAAA (slashs auto) ↔ stockage ISO AAAA-MM-JJ
 function fmtDateInput(el){
   let v=el.value.replace(/\D/g,'').slice(0,8);
@@ -215,7 +216,7 @@ function siteLinks(nom){
 
 function randoChips(r){
   const c=[];
-  if(r.temps_voiture_min!=null) c.push(`<span class="chip chip-sky">🚗 ${r.temps_voiture_min} min</span>`);
+  if(r.temps_voiture_min!=null) c.push(`<span class="chip chip-sky">🚗 ${fmtVoiture(r.temps_voiture_min)}</span>`);
   if(r.denivele!=null)          c.push(`<span class="chip">⛰️ ${r.denivele} m</span>`);
   if(r.distance_km!=null)       c.push(`<span class="chip">📏 ${r.distance_km} km</span>`);
   if(r.duree_h!=null)           c.push(`<span class="chip">⏱️ ${r.duree_h} h</span>`);
@@ -495,7 +496,7 @@ function sortieCard(s){
           ${iJoin(s.id)?'<span class="chip chip-green">✓ Je viens</span>':''}
           <span class="chip">👥 ${np}</span>
           ${s.nbPhotos?`<span class="chip">📷 ${s.nbPhotos}</span>`:''}
-          ${r&&r.temps_voiture_min!=null?`<span class="chip chip-sky">⏱️ ${r.temps_voiture_min} min route</span>`:''}
+          ${r&&r.temps_voiture_min!=null?`<span class="chip chip-sky">⏱️ ${fmtVoiture(r.temps_voiture_min)} route</span>`:''}
           ${!r?'<span class="chip chip-sun">💡 rando à définir</span>':''}
         </div>
       </div>
@@ -698,7 +699,7 @@ function suggHtml(sid,list){
   if(!list.length) return '<div class="empty"><div class="e-ic">🤷</div><p>Aucune rando avec ces filtres.<br>Change le filtre ci-dessus.</p></div>';
   return list.map(r=>`<div class="sugg">
     <div class="n">${esc(r.nom)}</div>
-    <div class="m">${[r.massif||r.region,r.temps_voiture_min!=null?`🚗 ${r.temps_voiture_min} min`:'',r.denivele!=null?`⛰️ ${r.denivele} m`:'',r.difficulte].filter(Boolean).join(' · ')}</div>
+    <div class="m">${[r.massif||r.region,r.temps_voiture_min!=null?`🚗 ${fmtVoiture(r.temps_voiture_min)}`:'',r.denivele!=null?`⛰️ ${r.denivele} m`:'',r.difficulte].filter(Boolean).join(' · ')}</div>
     <div class="chips" style="margin-top:9px">
       <button class="btn btn-sm" onclick="choisirRando('${sid}','${r.id}')">✓ Choisir</button>
       <button class="btn btn-ghost btn-sm" onclick="openRando('${r.id}')">Détails</button>
