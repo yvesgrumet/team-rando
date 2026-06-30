@@ -392,6 +392,7 @@ function enterApp(){
 
 /* ════════════════════════════════  NAV  ════════════════════════════════ */
 function navigate(v){
+  if(v==='messages'){ if(_forceChan) _forceChan=false; else gotoLastConversation(); }
   CURRENT=v;
   document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
@@ -997,7 +998,7 @@ function startPresence(){
 }
 
 /* ── Canaux (Tchat / Sortie / Rando) ── */
-let MTAB='general', MCHAN='general';
+let MTAB='general', MCHAN='general', _forceChan=false;
 const chanOf   = m => m.channel || 'general';
 const chanMsgs = chan => msgsArr().filter(m=>chanOf(m)===chan);
 function unreadInChan(chan){ if(!ME) return 0; return chanMsgs(chan).filter(m=>m.membreId!==ME.id && !(m.vu&&m.vu[ME.id])).length; }
@@ -1014,18 +1015,25 @@ function chanTitle(chan){
   return '💬';
 }
 function activeChan(){ if(MTAB==='general') return 'general'; if(MCHAN && MCHAN!=='general') return MCHAN; return null; }
-function lastActivityTab(){
-  const msgs=msgsArr(); if(!msgs.length) return null;
-  const last=msgs.slice().sort((a,b)=>(a.createdAt||'').localeCompare(b.createdAt||'')).pop();
-  if(!last) return null;
-  const c=chanOf(last);
-  if(c==='general') return 'general';
-  if(c.startsWith('sortie_')) return 'sorties';
-  if(c.startsWith('rando_')) return 'randos';
-  return null;
+function lastMsg(){ const msgs=msgsArr(); if(!msgs.length) return null; return msgs.slice().sort((a,b)=>(a.createdAt||'').localeCompare(b.createdAt||'')).pop(); }
+function tabOfChan(c){ if(c==='general') return 'general'; if(c.indexOf('sortie_')===0) return 'sorties'; if(c.indexOf('rando_')===0) return 'randos'; return null; }
+function lastActivityTab(){ const m=lastMsg(); return m?tabOfChan(chanOf(m)):null; }
+function lastActivityChan(){ const m=lastMsg(); return m?chanOf(m):null; }
+// Dernière conversation d'un onglet donné (la plus récente de la catégorie)
+function lastChanInTab(tab){
+  if(tab==='general') return 'general';
+  const pref = tab==='sorties'?'sortie_':'rando_';
+  const ms=msgsArr().filter(m=>chanOf(m).indexOf(pref)===0).sort((a,b)=>(a.createdAt||'').localeCompare(b.createdAt||''));
+  return ms.length?chanOf(ms[ms.length-1]):null;
 }
-function setMTab(tab){ MTAB=tab; MCHAN = tab==='general'?'general':null; renderMessages(); }
-function openChan(chan,tab){ closeModalNow(); MTAB=tab||MTAB; MCHAN=chan; if(CURRENT!=='messages') navigate('messages'); else renderMessages(); }
+// Ouvre directement la dernière conversation (toutes catégories) — pour l'entrée dans Messages
+function gotoLastConversation(){
+  const lc=lastActivityChan();
+  if(!lc||lc==='general'){ MTAB='general'; MCHAN='general'; return; }
+  MTAB=tabOfChan(lc)||'general'; MCHAN=lc;
+}
+function setMTab(tab){ MTAB=tab; MCHAN = lastChanInTab(tab); renderMessages(); }
+function openChan(chan,tab){ closeModalNow(); _forceChan=true; MTAB=tab||MTAB; MCHAN=chan; if(CURRENT!=='messages') navigate('messages'); else { renderMessages(); _forceChan=false; } }
 function backToList(){ MCHAN=null; renderMessages(); }
 
 /* ── Vue Messages ── */
@@ -1044,7 +1052,7 @@ function renderMessages(){
     ${inner}`;
   setTimeout(()=>{ const ml=$('msg-list'); if(ml) ml.scrollTop=ml.scrollHeight; }, 0);
   const inp=$('msg-input'); if(inp){ inp.value=keepVal; if(keepFocus) inp.focus(); }
-  if(ac) markMessagesRead(ac); else markMessagesRead(null);
+  markMessagesRead(null); // on est dans la messagerie → tout est considéré vu (efface le badge)
 }
 function chatBlock(chan){
   const list=chanMsgs(chan);
