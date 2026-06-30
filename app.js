@@ -690,7 +690,11 @@ function renderSuggModal(sid){
     <div class="filters" style="margin:0 -4px 12px;border:none;padding:0">
       ${voits.map(([v,l])=>`<span class="fchip ${SUGG.voiture===v?'on':''}" onclick="setSugg('${sid}','voiture',${v})">${l}</span>`).join('')}
     </div>
-    <div id="sugg-list">${suggHtml(sid,suggList(sid))}</div>`);
+    <div id="sugg-list">${suggHtml(sid,suggList(sid))}</div>
+    <div style="border-top:1px solid var(--line);margin-top:12px;padding-top:12px">
+      <p class="mini-note" style="text-align:left;padding:0 0 8px">Pas dans la liste ? Ajoute-la avec son/ses lien(s) Visorando :</p>
+      <button class="btn btn-sun btn-full btn-sm" onclick="addRandoForSortie('${sid}')">➕ Ajouter une rando absente du catalogue</button>
+    </div>`);
 }
 function setSugg(sid,key,val){ SUGG[key]=val; renderSuggModal(sid); }
 function suggHtml(sid,list){
@@ -814,10 +818,21 @@ function geoQuery(r){ return encodeURIComponent(cleanPlace(r)+', '+(r.massif||r.
 function mapsUrl(r){ return `https://www.google.com/maps/dir/?api=1&destination=${geoQuery(r)}`; }
 function meteoUrl(r){ return `https://www.google.com/search?q=${encodeURIComponent('meteoblue '+cleanPlace(r))}`; }
 
+function linkLabel(u){
+  const s=(u||'').toLowerCase();
+  if(s.includes('visorando'))      return {n:'Fiche Visorando',c:'#2e7d32',i:'V'};
+  if(s.includes('altituderando'))  return {n:'Fiche AltitudeRando',c:'#0277bd',i:'A'};
+  if(s.includes('annecy')||s.includes('aravis')) return {n:'Lac Annecy Aravis',c:'#f97316',i:'🏔️'};
+  if(s.includes('komoot'))         return {n:'Fiche Komoot',c:'#6aa127',i:'K'};
+  if(s.includes('google.com/maps')||s.includes('openstreetmap')) return {n:'Carte / trace',c:'#1a73e8',i:'📍'};
+  return {n:'Voir la fiche',c:'var(--green)',i:'🔗'};
+}
 function siteButtons(r){
   const L=siteLinks(r.nom);
+  const saved=(r.urls&&r.urls.length)?r.urls:(r.url?[r.url]:[]);
+  const savedHtml=saved.map(u=>{ const lb=linkLabel(u); return `<a class="sitelink" href="${esc(u)}" target="_blank" rel="noopener"><span class="logo" style="background:${lb.c}">${lb.i}</span> ${lb.n} <span class="arr">↗</span></a>`; }).join('');
   return `<div style="margin:4px 0 8px">
-    ${r.url?`<a class="sitelink" href="${esc(r.url)}" target="_blank" rel="noopener"><span class="logo" style="background:var(--green)">🔗</span> Voir la fiche enregistrée <span class="arr">↗</span></a>`:''}
+    ${savedHtml}
     <a class="sitelink" href="${L.visorando}" target="_blank" rel="noopener"><span class="logo" style="background:#2e7d32">V</span> Chercher sur Visorando <span class="arr">↗</span></a>
     <a class="sitelink" href="${L.altitude}" target="_blank" rel="noopener"><span class="logo" style="background:#0277bd">A</span> Chercher sur AltitudeRando <span class="arr">↗</span></a>
     <a class="sitelink" href="${L.annecy}" target="_blank" rel="noopener"><span class="logo" style="background:var(--orange-d)">🏔️</span> Lac Annecy Aravis Outdoor <span class="arr">↗</span></a>
@@ -881,15 +896,17 @@ async function supprRando(id){
 }
 function openCreerRando(){ randoForm(null); }
 function openEditRando(id){ randoForm(getR(id)); }
-function randoForm(r){
+function addRandoForSortie(sid){ randoForm(null, sid); }
+function randoForm(r, forSortie){
   r=r||{};
+  const urls=(r.urls&&r.urls.length)?r.urls:(r.url?[r.url]:[]);
   const opt=(arr,sel)=>arr.map(o=>`<option ${o===sel?'selected':''}>${o}</option>`).join('');
-  openModal(`<h3>${r.id?'✏️ Modifier':'🥾 Nouvelle rando'}</h3>
+  openModal(`<h3>${r.id?'✏️ Modifier':(forSortie?'🥾 Rando pour la sortie':'🥾 Nouvelle rando')}</h3>
     ${r.id?'':`<div class="fg" style="background:#f0f9ff;border:1.5px dashed var(--sky);border-radius:14px;padding:12px">
       <label>📥 Importer depuis un lien</label>
-      <input type="url" id="rf-import" placeholder="Collez l'adresse Visorando / AltitudeRando…">
+      <input type="url" id="rf-import">
       <button class="btn btn-soft btn-sm btn-full" style="margin-top:8px" onclick="importDepuisLien()">Pré-remplir avec ce lien</button>
-      <p class="mini-note" style="text-align:left;padding:6px 0 0">Le nom et le lien se remplissent tout seuls. Complétez ensuite voiture, dénivelé, etc.</p>
+      <p class="mini-note" style="text-align:left;padding:6px 0 0">Collez un lien Visorando/AltitudeRando : le nom et le lien se remplissent. Complétez ensuite le reste.</p>
     </div>`}
     <div class="fg"><label>Nom *</label><input id="rf-nom" value="${esc(r.nom||'')}"></div>
     <div class="fg"><label>Massif</label>
@@ -910,8 +927,12 @@ function randoForm(r){
       <div class="fg"><label>Paysage</label><select id="rf-pays"><option value="">—</option>${opt(['Lac','Sommet','Panorama','Forêt','Cascade','Gorges','Plateau','Glacier','Village'],r.paysage)}</select></div>
     </div>
     <div class="fg"><label>Description</label><textarea id="rf-desc" rows="2">${esc(r.description||'')}</textarea></div>
-    <div class="fg"><label>Lien direct (facultatif)</label><input type="url" id="rf-url" value="${esc(r.url||'')}"></div>
-    <button class="btn btn-full btn-lg" onclick="saveRando('${r.id||''}')">${r.id?'Enregistrer':'Ajouter la rando'} ✓</button>`);
+    <div class="fg"><label>🔗 Liens (Visorando, AltitudeRando… — plusieurs possibles)</label>
+      <input type="url" id="rf-url1" value="${esc(urls[0]||'')}">
+      <input type="url" id="rf-url2" value="${esc(urls[1]||'')}" style="margin-top:6px">
+      <input type="url" id="rf-url3" value="${esc(urls[2]||'')}" style="margin-top:6px">
+    </div>
+    <button class="btn btn-full btn-lg" onclick="saveRando('${r.id||''}','${forSortie||''}')">${r.id?'Enregistrer':(forSortie?'Ajouter & choisir pour la sortie':'Ajouter la rando')} ✓</button>`);
 }
 function nameFromUrl(u){
   try{
@@ -930,20 +951,26 @@ function importDepuisLien(){
   const u=$('rf-import').value.trim();
   if(!u) return toast('Collez d\'abord un lien','err');
   if(!/^https?:\/\//i.test(u)) return toast('Lien invalide (doit commencer par http)','err');
-  $('rf-url').value=u;
+  $('rf-url1').value=u;
   const nom=nameFromUrl(u);
   if(nom){ $('rf-nom').value=nom; toast('Nom et lien remplis ✓ — complétez le reste'); }
   else { toast('Lien ajouté ✓ — saisissez le nom à la main'); }
 }
-async function saveRando(id){
+async function saveRando(id, forSortie){
   const nom=$('rf-nom').value.trim(); if(!nom) return toast('Indique un nom','err');
   const num=v=>v===''?null:+v;
+  const urls=['rf-url1','rf-url2','rf-url3'].map(i=>($(i)?$(i).value.trim():'')).filter(u=>/^https?:\/\//i.test(u));
   const data={ nom, massif:$('rf-massif').value.trim()||null, region:$('rf-massif').value.trim()||null, depart:$('rf-depart').value.trim()||null,
     temps_voiture_min:num($('rf-voiture').value), denivele:num($('rf-deniv').value), distance_km:num($('rf-dist').value),
     duree_h:num($('rf-duree').value), difficulte:$('rf-diff').value||null, paysage:$('rf-pays').value||null,
-    description:$('rf-desc').value.trim()||null, url:$('rf-url').value.trim()||null };
+    description:$('rf-desc').value.trim()||null, urls:urls.length?urls:null, url:urls[0]||null };
   if(id){ await DB.update('randos/'+id,data); toast('Modifié ✓'); openRando(id); }
-  else { data.createdBy=ME.id; data.createdAt=new Date().toISOString(); const nid=await DB.push('randos',data); toast('Rando ajoutée ! 🥾'); closeModalNow(); drawRandos(); }
+  else {
+    data.createdBy=ME.id; data.createdAt=new Date().toISOString();
+    const nid=await DB.push('randos',data);
+    if(forSortie){ await DB.update('sorties/'+forSortie,{randoId:nid}); toast('Rando créée et choisie ! 🥾'); openSortie(forSortie); }
+    else { toast('Rando ajoutée ! 🥾'); closeModalNow(); drawRandos(); }
+  }
 }
 
 /* ════════════════════════════════  MESSAGERIE  ════════════════════════════════ */
@@ -1296,7 +1323,7 @@ window.addPhotosToSortie=addPhotosToSortie; window.openPhoto=openPhoto; window.d
 window.rejoindreSortie=rejoindreSortie; window.quitterSortie=quitterSortie; window.supprSortie=supprSortie;
 window.openEditSortie=openEditSortie; window.majSortie=majSortie;
 window.openSuggestions=openSuggestions; window.setSugg=setSugg; window.choisirRando=choisirRando;
-window.openRando=openRando; window.openCreerRando=openCreerRando; window.openEditRando=openEditRando;
+window.openRando=openRando; window.openCreerRando=openCreerRando; window.openEditRando=openEditRando; window.addRandoForSortie=addRandoForSortie;
 window.saveRando=saveRando; window.importDepuisLien=importDepuisLien;
 window.majSearch=majSearch; window.setRF=setRF; window.toggleRF=toggleRF;
 window.openMarquerFaite=openMarquerFaite; window.marquerFaite=marquerFaite; window.retirerFaite=retirerFaite; window.supprRando=supprRando;
