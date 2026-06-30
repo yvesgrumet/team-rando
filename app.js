@@ -1042,6 +1042,8 @@ function renderMessages(){
   const tabs=[['general','💬 Tchat'],['sorties','📅 Sorties'],['randos','🥾 Randos']];
   const ac=activeChan();
   const prev=$('msg-input'); const keepVal=prev?prev.value:''; const keepFocus=prev&&document.activeElement===prev;
+  const prevMl=$('msg-list'); const prevTop=prevMl?prevMl.scrollTop:null;
+  const prevAtBottom=prevMl?(prevMl.scrollHeight-prevMl.scrollTop-prevMl.clientHeight<60):false;
   const inner = ac ? chatBlock(ac) : (MTAB==='sorties'?discList('sortie'):discList('rando'));
   const lastTab=lastActivityTab();
   $('view-messages').innerHTML=`
@@ -1050,12 +1052,13 @@ function renderMessages(){
       ${tabs.map(([v,l])=>{const u=tabUnread(v); const isLast=lastTab===v&&MTAB!==v; return `<span class="fchip ${MTAB===v?'on':''}${isLast?' last-chan':''}" onclick="setMTab('${v}')">${l}${u?` <span class="disc-badge" style="display:inline-flex;height:17px;min-width:17px;font-size:10px">${u}</span>`:''}</span>`;}).join('')}
     </div>
     ${inner}`;
-  if(ac){ const key=ac+':'+chanMsgs(ac).length; const grow=key!==_lastChatKey; _lastChatKey=key; scrollMsgsBottom(grow); }
+  if(ac){ const key=ac+':'+chanMsgs(ac).length; const grow=key!==_lastChatKey; _lastChatKey=key; scrollMsgsBottom(grow, prevTop, prevAtBottom); }
   const inp=$('msg-input'); if(inp){ inp.value=keepVal; if(keepFocus) inp.focus(); }
   markMessagesRead(null); // on est dans la messagerie → tout est considéré vu (efface le badge)
 }
-function scrollMsgsBottom(scroll){
+function scrollMsgsBottom(scroll, prevTop, prevAtBottom){
   // On garde l'en-tête + les onglets visibles : seule .msg-list défile (hauteur bornée).
+  // scroll=true (ouverture/nouveau message) → bas ; sinon (réaction, accusé de lecture…) → on garde la position.
   const ml=$('msg-list'); if(!ml) return;
   if(scroll) window.scrollTo(0,0);
   const apply=()=>{
@@ -1067,7 +1070,8 @@ function scrollMsgsBottom(scroll){
     ml.style.height=Math.max(160,h)+'px';
     ml.style.overflowY='auto';
     ml.style.paddingBottom='10px';
-    if(scroll) ml.scrollTop=ml.scrollHeight;
+    if(scroll || prevAtBottom) ml.scrollTop=ml.scrollHeight;
+    else if(prevTop!=null) ml.scrollTop=prevTop;   // restaure la position (évite de remonter en haut après une réaction)
   };
   requestAnimationFrame(()=>{ apply(); requestAnimationFrame(apply); });
   setTimeout(apply,150); setTimeout(apply,450);
