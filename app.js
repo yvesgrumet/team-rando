@@ -820,13 +820,63 @@ function renderRandos(){
         ${massifs.map(m=>`<option value="${esc(m)}" ${RF.massif===m?'selected':''}>${esc(m)} (${counts[m]})</option>`).join('')}
       </select>
     </div>
+    <button class="btn btn-soft btn-full btn-sm" style="margin:0 14px" onclick="openCarteMassifs()">🗺️ Carte des massifs</button>
     <div class="filters">
       ${[['','Toutes'],['30','🚗 ≤30min'],['60','≤1h'],['90','≤1h30'],['150','≤2h30']].map(([v,l])=>`<span class="fchip ${(''+(RF.voiture||''))===v?'on':''}" onclick="setRF('voiture','${v}')">${l}</span>`).join('')}
       <span class="fchip ${RF.todo?'on':''}" onclick="toggleRF('todo')">✨ Pas encore faites</span>
       ${['Facile','Moyen','Difficile'].map(d=>`<span class="fchip ${RF.diff===d?'on':''}" onclick="setRF('diff','${RF.diff===d?'':d}')">${d}</span>`).join('')}
     </div>
+    <p class="mini-note" style="text-align:left;padding:2px 16px 0">✅ Le carré à droite de chaque rando sert à noter que <b>tu l'as faite</b> : ça alimente le suivi « qui a fait quoi » et les <b>suggestions de sorties</b> (randos que personne du groupe n'a encore faites).</p>
     <div id="rando-list"></div>`;
   drawRandos();
+}
+/* ── Carte schématique des massifs (repères villes) ── */
+const CARTE_MASSIFS=[
+  {n:'Jura',x:150,y:70,c:'#0284c7'},
+  {n:'Haut-Jura',x:300,y:120,c:'#0284c7'},
+  {n:'Bugey',x:135,y:290,c:'#16a34a'},
+  {n:'Genevois',x:330,y:238,c:'#0d9488'},
+  {n:'Chablais',x:540,y:150,c:'#7c3aed'},
+  {n:'Bornes',x:445,y:262,c:'#d97706'},
+  {n:'Aravis',x:495,y:300,c:'#d97706'},
+  {n:'Annecy',x:405,y:335,c:'#0d9488'},
+  {n:'Bauges',x:360,y:395,c:'#16a34a'},
+  {n:'Mont-Blanc',x:600,y:340,c:'#dc2626'},
+  {n:'Chartreuse',x:250,y:470,c:'#16a34a'}
+];
+const CARTE_VILLES=[
+  {n:'Nantua',x:188,y:217,star:true},
+  {n:'Oyonnax',x:206,y:180},
+  {n:'Bourg-en-Bresse',x:78,y:238},
+  {n:'Genève',x:371,y:200},
+  {n:'Thonon',x:490,y:120},
+  {n:'Annecy',x:368,y:308},
+  {n:'Chambéry',x:295,y:415},
+  {n:'Chamonix',x:628,y:288},
+  {n:'Grenoble',x:230,y:520}
+];
+function openCarteMassifs(){
+  const chips=CARTE_MASSIFS.map(m=>{ const w=m.n.length*8.3+18;
+    return `<g><rect x="${m.x-w/2}" y="${m.y-13}" width="${w}" height="26" rx="13" fill="${m.c}" opacity="0.92"/>
+      <text x="${m.x}" y="${m.y+5}" text-anchor="middle" font-size="14.5" font-weight="800" fill="#fff">${esc(m.n)}</text></g>`; }).join('');
+  const villes=CARTE_VILLES.map(v=>{
+    const edge=v.x>560; // villes proches du bord droit : label à gauche du point
+    const dot=v.star?`<text x="${v.x}" y="${v.y+6}" text-anchor="middle" font-size="20">📍</text>`:`<circle cx="${v.x}" cy="${v.y}" r="4.5" fill="#0f293b"/>`;
+    const tx=v.star?v.x:(edge?v.x-8:v.x+8); const anchor=v.star?'middle':(edge?'end':'start');
+    return `<g>${dot}<text x="${tx}" y="${v.star?v.y-13:v.y+4}" text-anchor="${anchor}" font-size="13" font-weight="${v.star?'800':'700'}" fill="#0f293b">${esc(v.n)}</text></g>`; }).join('');
+  const svg=`<svg viewBox="0 0 680 560" width="100%" style="display:block;background:linear-gradient(160deg,#eef7ff,#f0fdf4);border-radius:16px">
+    <text x="640" y="40" text-anchor="middle" font-size="15" font-weight="800" fill="#64748b">N</text>
+    <path d="M640 46 l-7 16 h14 z" fill="#64748b"/>
+    <line x1="640" y1="58" x2="640" y2="80" stroke="#64748b" stroke-width="2"/>
+    ${villes}
+    ${chips}
+  </svg>`;
+  openModal(`<h3>🗺️ Carte des massifs</h3>
+    <p class="mini-note" style="text-align:left;padding:0 0 10px">Situation des massifs autour de <b>Nantua</b> 📍, avec quelques villes pour te repérer. Les couleurs regroupent les secteurs proches.</p>
+    ${svg}
+    <div style="display:flex;gap:14px;justify-content:center;margin-top:10px;font-size:12.5px;font-weight:700;color:var(--muted)">
+      <span>📍 = Nantua</span><span>● = ville repère</span><span>▬ = massif</span>
+    </div>`);
 }
 function majSearch(v){ RF.q=v; clearTimeout(window._st); window._st=setTimeout(runSearch,400); }
 async function runSearch(){
