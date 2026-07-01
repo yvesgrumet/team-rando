@@ -182,6 +182,8 @@ h1,h2,h3,.fred{font-family:'Fredoka',sans-serif;font-weight:600;}
 .rando{background:#fff;border-radius:18px;margin:12px 14px 0;border:1px solid var(--line);
   padding:14px;box-shadow:var(--shadow-sm);cursor:pointer;transition:transform .12s}
 .rando:active{transform:scale(.99)}
+.rando.bivouac{background:linear-gradient(135deg,#f5f3ff,#faf5ff);border-color:#c4b5fd}
+.chip-biv{background:#ddd6fe;color:#5b21b6}
 .rando-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .rando-nom{font-family:'Fredoka',sans-serif;font-size:17px;font-weight:600;line-height:1.15}
 .rando-region{font-size:12.5px;color:var(--muted);font-weight:700;margin-top:2px}
