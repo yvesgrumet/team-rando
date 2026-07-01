@@ -205,9 +205,32 @@ const SEED_RANDOS = [
   {nom:"Lacs de la Pra & Refuge de la Pra",massif:"Belledonne",denivele:1100,distance_km:18,duree_h:9,temps_voiture_min:150,difficulte:"Difficile",paysage:"Lac",depart:"Freydières",jours:2,refuge:"Refuge de la Pra"},
   {nom:"Refuge du Lac Blanc (balcon du Mont-Blanc)",massif:"Mont-Blanc",denivele:1000,distance_km:14,duree_h:8,temps_voiture_min:140,difficulte:"Difficile",paysage:"Lac",depart:"La Flégère (Chamonix)",jours:2,refuge:"Refuge du Lac Blanc"},
   {nom:"Les Cornettes de Bise & Chalets de Bise",massif:"Chablais",denivele:1300,distance_km:17,duree_h:10,temps_voiture_min:135,difficulte:"Difficile",paysage:"Sommet",depart:"La Chapelle-d'Abondance",jours:2,refuge:"Refuge de Bise"},
-  {nom:"Refuge de Bellachat & le Brévent",massif:"Mont-Blanc",denivele:1400,distance_km:15,duree_h:9,temps_voiture_min:135,difficulte:"Difficile",paysage:"Panorama",depart:"Les Houches",jours:2,refuge:"Refuge de Bellachat"}
+  {nom:"Refuge de Bellachat & le Brévent",massif:"Mont-Blanc",denivele:1400,distance_km:15,duree_h:9,temps_voiture_min:135,difficulte:"Difficile",paysage:"Panorama",depart:"Les Houches",jours:2,refuge:"Refuge de Bellachat"},
+  // ── 10ᵉ série : HAUT-GIFFRE / AIGUILLES ROUGES / LAUZIÈRE / VANOISE (difficiles, ≤ 2h30) ──
+  {nom:"Le Criou",massif:"Haut-Giffre",denivele:1600,distance_km:13,duree_h:7,temps_voiture_min:135,difficulte:"Très difficile",paysage:"Sommet",depart:"Samoëns"},
+  {nom:"La Tête de Bostan",massif:"Haut-Giffre",denivele:1200,distance_km:12,duree_h:6,temps_voiture_min:140,difficulte:"Difficile",paysage:"Sommet",depart:"Samoëns (Col de la Golèse)"},
+  {nom:"Le Grenairon & Pointe de Sales",massif:"Haut-Giffre",denivele:1500,distance_km:15,duree_h:7.5,temps_voiture_min:140,difficulte:"Très difficile",paysage:"Sommet",depart:"Sixt-Fer-à-Cheval"},
+  {nom:"Le Pic de Tenneverge",massif:"Haut-Giffre",denivele:1500,distance_km:16,duree_h:8,temps_voiture_min:140,difficulte:"Très difficile",paysage:"Sommet",depart:"Sixt (Bout du Monde)"},
+  {nom:"La Pointe d'Anterne (Fiz)",massif:"Haut-Giffre",denivele:1300,distance_km:14,duree_h:7,temps_voiture_min:135,difficulte:"Difficile",paysage:"Sommet",depart:"Sixt (Salvagny)"},
+  {nom:"Le Dérochoir & Chalets de Villy",massif:"Haut-Giffre",denivele:1100,distance_km:12,duree_h:6,temps_voiture_min:135,difficulte:"Difficile",paysage:"Panorama",depart:"Passy (Plaine-Joux)"},
+  {nom:"L'Aiguille du Belvédère (2965 m)",massif:"Aiguilles Rouges",denivele:1500,distance_km:14,duree_h:8,temps_voiture_min:150,difficulte:"Très difficile",paysage:"Sommet",depart:"La Flégère (Chamonix)"},
+  {nom:"La Pointe de la Terrasse",massif:"Aiguilles Rouges",denivele:1300,distance_km:14,duree_h:7,temps_voiture_min:150,difficulte:"Difficile",paysage:"Sommet",depart:"Le Buet (Vallorcine)"},
+  {nom:"L'Index & les Lacs Noirs",massif:"Aiguilles Rouges",denivele:1000,distance_km:11,duree_h:5.5,temps_voiture_min:145,difficulte:"Difficile",paysage:"Lac",depart:"Les Praz (Flégère)"},
+  {nom:"Le Col du Belvédère par le Vallon de Bérard",massif:"Aiguilles Rouges",denivele:1200,distance_km:14,duree_h:7,temps_voiture_min:150,difficulte:"Difficile",paysage:"Cascade",depart:"Le Buet (Vallorcine)"},
+  {nom:"La Pointe Noire de Pormenaz",massif:"Aiguilles Rouges",denivele:1300,distance_km:14,duree_h:7,temps_voiture_min:135,difficulte:"Difficile",paysage:"Sommet",depart:"Servoz"},
+  {nom:"Le Grand Pic de la Lauzière (2829 m)",massif:"Lauzière",denivele:1400,distance_km:14,duree_h:7.5,temps_voiture_min:150,difficulte:"Très difficile",paysage:"Sommet",depart:"Celliers"},
+  {nom:"Le Cheval Noir (2832 m)",massif:"Lauzière",denivele:1300,distance_km:15,duree_h:7,temps_voiture_min:150,difficulte:"Difficile",paysage:"Sommet",depart:"Saint-François-Longchamp"},
+  {nom:"La Pointe de Combe Bronsin",massif:"Lauzière",denivele:1200,distance_km:13,duree_h:6.5,temps_voiture_min:145,difficulte:"Difficile",paysage:"Sommet",depart:"Celliers"},
+  {nom:"Le Grand Arc",massif:"Lauzière",denivele:1200,distance_km:13,duree_h:6.5,temps_voiture_min:135,difficulte:"Difficile",paysage:"Panorama",depart:"La Bâthie"},
+  {nom:"Le Gros Villan",massif:"Lauzière",denivele:1100,distance_km:12,duree_h:6,temps_voiture_min:145,difficulte:"Difficile",paysage:"Sommet",depart:"Celliers"},
+  {nom:"L'Aiguille de la Vanoise",massif:"Vanoise",denivele:1000,distance_km:14,duree_h:6,temps_voiture_min:150,difficulte:"Difficile",paysage:"Sommet",depart:"Pralognan-la-Vanoise"},
+  {nom:"Le Grand Bec par le Ritord",massif:"Vanoise",denivele:1500,distance_km:16,duree_h:8,temps_voiture_min:150,difficulte:"Très difficile",paysage:"Sommet",depart:"Pralognan (Ritord)"},
+  {nom:"La Dent Parrachée (versant Aussois)",massif:"Vanoise",denivele:1400,distance_km:15,duree_h:8,temps_voiture_min:150,difficulte:"Très difficile",paysage:"Sommet",depart:"Aussois"},
+  {nom:"La Pointe de l'Observatoire",massif:"Vanoise",denivele:1200,distance_km:14,duree_h:7,temps_voiture_min:150,difficulte:"Difficile",paysage:"Lac",depart:"Aussois (Plan d'Amont)"},
+  {nom:"Le Petit Mont Blanc",massif:"Vanoise",denivele:1100,distance_km:14,duree_h:6.5,temps_voiture_min:150,difficulte:"Difficile",paysage:"Panorama",depart:"Pralognan (Les Prioux)"},
+  {nom:"Le Col de la Vanoise & Pointe de la Réchasse",massif:"Vanoise",denivele:1200,distance_km:15,duree_h:7,temps_voiture_min:150,difficulte:"Difficile",paysage:"Sommet",depart:"Pralognan-la-Vanoise"}
 ];
-const SEED_VERSION = 10;
+const SEED_VERSION = 11;
 
 /* ─────────────────────────────  Saints / Fête du jour  ───────────────────── */
 const SAINTS={"01-01":"Marie","01-02":"Basile","01-03":"Geneviève","01-04":"Odilon","01-05":"Édouard","01-06":"Mélaine","01-07":"Raymond","01-08":"Lucien","01-09":"Alix","01-10":"Guillaume","01-11":"Pauline","01-12":"Tatiana","01-13":"Yvette","01-14":"Nina","01-15":"Rémi","01-16":"Marcel","01-17":"Roseline","01-18":"Prisca","01-19":"Marius","01-20":"Sébastien","01-21":"Agnès","01-22":"Vincent","01-23":"Barnard","01-24":"François de Sales","01-25":"Conversion de Paul","01-26":"Paule","01-27":"Angèle","01-28":"Thomas d'Aquin","01-29":"Gildas","01-30":"Martine","01-31":"Marcelle","02-01":"Ella","02-02":"Présentation","02-03":"Blaise","02-04":"Véronique","02-05":"Agathe","02-06":"Gaston","02-07":"Eugénie","02-08":"Jacqueline","02-09":"Apolline","02-10":"Arnaud","02-11":"N.-D. de Lourdes","02-12":"Félix","02-13":"Béatrice","02-14":"Valentin","02-15":"Claude","02-16":"Julienne","02-17":"Alexis","02-18":"Bernadette","02-19":"Gabin","02-20":"Aimée","02-21":"Pierre Damien","02-22":"Isabelle","02-23":"Lazare","02-24":"Modeste","02-25":"Roméo","02-26":"Nestor","02-27":"Honorine","02-28":"Romain","02-29":"Auguste","03-01":"Aubin","03-02":"Charles le Bon","03-03":"Guénolé","03-04":"Casimir","03-05":"Olive","03-06":"Colette","03-07":"Félicité","03-08":"Jean de Dieu","03-09":"Françoise","03-10":"Vivien","03-11":"Rosine","03-12":"Justine","03-13":"Rodrigue","03-14":"Mathilde","03-15":"Louise","03-16":"Bénédicte","03-17":"Patrice","03-18":"Cyrille","03-19":"Joseph","03-20":"Herbert","03-21":"Clémence","03-22":"Léa","03-23":"Victorien","03-24":"Catherine de Suède","03-25":"Annonciation","03-26":"Larissa","03-27":"Habib","03-28":"Gontran","03-29":"Gwladys","03-30":"Amédée","03-31":"Benjamin","04-01":"Hugues","04-02":"Sandrine","04-03":"Richard","04-04":"Isidore","04-05":"Irène","04-06":"Marcellin","04-07":"J.-B. de la Salle","04-08":"Julie","04-09":"Gautier","04-10":"Fulbert","04-11":"Stanislas","04-12":"Jules","04-13":"Ida","04-14":"Maxime","04-15":"Paterne","04-16":"Benoît-Joseph","04-17":"Anicet","04-18":"Parfait","04-19":"Emma","04-20":"Odette","04-21":"Anselme","04-22":"Alexandre","04-23":"Georges","04-24":"Fidèle","04-25":"Marc","04-26":"Alida","04-27":"Zita","04-28":"Valérie","04-29":"Catherine de Sienne","04-30":"Robert","05-01":"Fête du Travail","05-02":"Boris","05-03":"Philippe & Jacques","05-04":"Sylvain","05-05":"Judith","05-06":"Prudence","05-07":"Gisèle","05-08":"Victoire 1945","05-09":"Pacôme","05-10":"Solange","05-11":"Estelle","05-12":"Achille","05-13":"Rolande","05-14":"Matthias","05-15":"Denise","05-16":"Honoré","05-17":"Pascal","05-18":"Éric","05-19":"Yves","05-20":"Bernardin","05-21":"Constantin","05-22":"Émile","05-23":"Didier","05-24":"Donatien","05-25":"Sophie","05-26":"Bérenger","05-27":"Augustin","05-28":"Germain","05-29":"Aymar","05-30":"Ferdinand","05-31":"Visitation","06-01":"Justin","06-02":"Blandine","06-03":"Kévin","06-04":"Clotilde","06-05":"Igor","06-06":"Norbert","06-07":"Gilbert","06-08":"Médard","06-09":"Diane","06-10":"Landry","06-11":"Barnabé","06-12":"Guy","06-13":"Antoine de Padoue","06-14":"Élisée","06-15":"Germaine","06-16":"J.-F. Régis","06-17":"Hervé","06-18":"Léonce","06-19":"Romuald","06-20":"Silvère","06-21":"Rodolphe","06-22":"Alban","06-23":"Audrey","06-24":"Jean-Baptiste","06-25":"Prosper","06-26":"Anthelme","06-27":"Fernand","06-28":"Irénée","06-29":"Pierre & Paul","06-30":"Martial","07-01":"Thierry","07-02":"Martinien","07-03":"Thomas","07-04":"Florent","07-05":"Antoine","07-06":"Mariette","07-07":"Raoul","07-08":"Thibaut","07-09":"Amandine","07-10":"Ulrich","07-11":"Benoît","07-12":"Olivier","07-13":"Henri & Joël","07-14":"Fête Nationale","07-15":"Donald","07-16":"N.-D. du Mont-Carmel","07-17":"Charlotte","07-18":"Frédéric","07-19":"Arsène","07-20":"Marina","07-21":"Victor","07-22":"Marie-Madeleine","07-23":"Brigitte","07-24":"Christine","07-25":"Jacques","07-26":"Anne & Joachim","07-27":"Nathalie","07-28":"Samson","07-29":"Marthe","07-30":"Juliette","07-31":"Ignace de Loyola","08-01":"Alphonse","08-02":"Julien Eymard","08-03":"Lydie","08-04":"J.-M. Vianney","08-05":"Abel","08-06":"Transfiguration","08-07":"Gaétan","08-08":"Dominique","08-09":"Amour","08-10":"Laurent","08-11":"Claire","08-12":"Clarisse","08-13":"Hippolyte","08-14":"Évrard","08-15":"Assomption","08-16":"Armel","08-17":"Hyacinthe","08-18":"Hélène","08-19":"Jean Eudes","08-20":"Bernard","08-21":"Christophe","08-22":"Fabrice","08-23":"Rose de Lima","08-24":"Barthélemy","08-25":"Louis","08-26":"Natacha","08-27":"Monique","08-28":"Augustin","08-29":"Sabine","08-30":"Fiacre","08-31":"Aristide","09-01":"Gilles","09-02":"Ingrid","09-03":"Grégoire","09-04":"Rosalie","09-05":"Raïssa","09-06":"Bertrand","09-07":"Reine","09-08":"Nativité de Marie","09-09":"Alain","09-10":"Inès","09-11":"Adelphe","09-12":"Apollinaire","09-13":"Aimé","09-14":"La Sainte-Croix","09-15":"Roland","09-16":"Édith","09-17":"Renaud","09-18":"Nadège","09-19":"Émilie","09-20":"Davy","09-21":"Matthieu","09-22":"Maurice","09-23":"Constant","09-24":"Thècle","09-25":"Hermann","09-26":"Côme & Damien","09-27":"Vincent de Paul","09-28":"Venceslas","09-29":"Michel, Gabriel, Raphaël","09-30":"Jérôme","10-01":"Thérèse de l'E.-J.","10-02":"Léger","10-03":"Gérard","10-04":"François d'Assise","10-05":"Fleur","10-06":"Bruno","10-07":"Serge","10-08":"Pélagie","10-09":"Denis","10-10":"Ghislain","10-11":"Firmin","10-12":"Wilfried","10-13":"Géraud","10-14":"Juste","10-15":"Thérèse d'Avila","10-16":"Edwige","10-17":"Baudouin","10-18":"Luc","10-19":"René","10-20":"Adeline","10-21":"Céline","10-22":"Élodie","10-23":"Jean de Capistran","10-24":"Florentin","10-25":"Crépin","10-26":"Dimitri","10-27":"Émeline","10-28":"Simon & Jude","10-29":"Narcisse","10-30":"Bienvenue","10-31":"Quentin","11-01":"Toussaint","11-02":"Défunts","11-03":"Hubert","11-04":"Charles","11-05":"Sylvie","11-06":"Bertille","11-07":"Carine","11-08":"Geoffroy","11-09":"Théodore","11-10":"Léon","11-11":"Armistice / Martin","11-12":"Christian","11-13":"Brice","11-14":"Sidoine","11-15":"Albert","11-16":"Marguerite","11-17":"Élisabeth","11-18":"Aude","11-19":"Tanguy","11-20":"Edmond","11-21":"Présentation de Marie","11-22":"Cécile","11-23":"Clément","11-24":"Flora","11-25":"Catherine","11-26":"Delphine","11-27":"Séverin","11-28":"Jacques de la M.","11-29":"Saturnin","11-30":"André","12-01":"Florence","12-02":"Viviane","12-03":"François-Xavier","12-04":"Barbara","12-05":"Gérald","12-06":"Nicolas","12-07":"Ambroise","12-08":"Immaculée Conception","12-09":"Pierre Fourier","12-10":"Romaric","12-11":"Daniel","12-12":"Jeanne F.-C.","12-13":"Lucie","12-14":"Odile","12-15":"Ninon","12-16":"Alice","12-17":"Gaël","12-18":"Gatien","12-19":"Urbain","12-20":"Abraham","12-21":"Pierre C.","12-22":"Françoise-Xavière","12-23":"Armand","12-24":"Adèle","12-25":"Noël","12-26":"Étienne","12-27":"Jean","12-28":"Saints Innocents","12-29":"David","12-30":"Roger","12-31":"Sylvestre"};
@@ -890,54 +913,75 @@ function renderRandos(){
 }
 /* ── Carte schématique des massifs (repères villes) ── */
 const CARTE_MASSIFS=[
-  {n:'Jura',x:150,y:70,c:'#0284c7'},
-  {n:'Haut-Jura',x:300,y:120,c:'#0284c7'},
-  {n:'Bugey',x:135,y:290,c:'#16a34a'},
-  {n:'Genevois',x:330,y:238,c:'#0d9488'},
-  {n:'Chablais',x:540,y:150,c:'#7c3aed'},
-  {n:'Bornes',x:445,y:262,c:'#d97706'},
-  {n:'Aravis',x:495,y:300,c:'#d97706'},
-  {n:'Annecy',x:405,y:335,c:'#0d9488'},
-  {n:'Bauges',x:360,y:395,c:'#16a34a'},
-  {n:'Mont-Blanc',x:600,y:340,c:'#dc2626'},
-  {n:'Beaufortain',x:515,y:390,c:'#0891b2'},
-  {n:'Chartreuse',x:235,y:465,c:'#16a34a'},
-  {n:'Belledonne',x:330,y:505,c:'#4338ca'}
+  {n:'Jura',x:228,y:95},
+  {n:'Haut-Jura',x:300,y:150},
+  {n:'Bugey',x:165,y:285},
+  {n:'Genevois',x:327,y:238},
+  {n:'Chablais',x:520,y:178},
+  {n:'Haut-Giffré',x:558,y:238},
+  {n:'Aig. Rouges',x:602,y:282},
+  {n:'Mont-Blanc',x:612,y:322},
+  {n:'Bornes',x:419,y:272},
+  {n:'Aravis',x:466,y:303},
+  {n:'Annecy',x:380,y:332},
+  {n:'Bauges',x:358,y:378},
+  {n:'Beaufortain',x:499,y:355},
+  {n:'Lauzière',x:452,y:410},
+  {n:'Vanoise',x:591,y:448},
+  {n:'Chartreuse',x:258,y:469},
+  {n:'Belledonne',x:311,y:499}
 ];
 const CARTE_VILLES=[
-  {n:'Nantua',x:188,y:217,star:true},
-  {n:'Oyonnax',x:206,y:180},
-  {n:'Bourg-en-Bresse',x:78,y:238},
-  {n:'Genève',x:371,y:200},
-  {n:'Thonon',x:490,y:120},
-  {n:'Annecy',x:368,y:308},
-  {n:'Chambéry',x:295,y:415},
-  {n:'Chamonix',x:628,y:288},
-  {n:'Albertville',x:455,y:360},
-  {n:'Grenoble',x:210,y:525}
+  {n:'Nantua',x:182,y:227,star:true},
+  {n:'Oyonnax',x:200,y:192},
+  {n:'Bourg-en-Bresse',x:58,y:232},
+  {n:'Genève',x:357,y:210},
+  {n:'Thonon',x:469,y:158},
+  {n:'Annecy',x:353,y:303},
+  {n:'Chambéry',x:284,y:408},
+  {n:'Albertville',x:435,y:372},
+  {n:'Moûtiers',x:490,y:432},
+  {n:'Chamonix',x:600,y:302},
+  {n:'Grenoble',x:218,y:520}
 ];
 function openCarteMassifs(){
-  const chips=CARTE_MASSIFS.map(m=>{ const w=m.n.length*8.3+18;
-    return `<g><rect x="${m.x-w/2}" y="${m.y-13}" width="${w}" height="26" rx="13" fill="${m.c}" opacity="0.92"/>
-      <text x="${m.x}" y="${m.y+5}" text-anchor="middle" font-size="14.5" font-weight="800" fill="#fff">${esc(m.n)}</text></g>`; }).join('');
+  const chips=CARTE_MASSIFS.map(m=>{ const t=m.n.toUpperCase(); const w=t.length*8.6+20;
+    return `<g><rect x="${m.x-w/2}" y="${m.y-13}" width="${w}" height="26" rx="5" fill="#b3261e" stroke="#7f1d1d" stroke-width="1"/>
+      <text x="${m.x}" y="${m.y+5}" text-anchor="middle" font-size="13.5" font-weight="800" fill="#fff" letter-spacing="0.3">${esc(t)}</text></g>`; }).join('');
   const villes=CARTE_VILLES.map(v=>{
-    const edge=v.x>560; // villes proches du bord droit : label à gauche du point
-    const dot=v.star?`<text x="${v.x}" y="${v.y+6}" text-anchor="middle" font-size="20">📍</text>`:`<circle cx="${v.x}" cy="${v.y}" r="4.5" fill="#0f293b"/>`;
-    const tx=v.star?v.x:(edge?v.x-8:v.x+8); const anchor=v.star?'middle':(edge?'end':'start');
-    return `<g>${dot}<text x="${tx}" y="${v.star?v.y-13:v.y+4}" text-anchor="${anchor}" font-size="13" font-weight="${v.star?'800':'700'}" fill="#0f293b">${esc(v.n)}</text></g>`; }).join('');
-  const svg=`<svg viewBox="0 0 680 560" width="100%" style="display:block;background:linear-gradient(160deg,#eef7ff,#f0fdf4);border-radius:16px">
-    <text x="640" y="40" text-anchor="middle" font-size="15" font-weight="800" fill="#64748b">N</text>
-    <path d="M640 46 l-7 16 h14 z" fill="#64748b"/>
-    <line x1="640" y1="58" x2="640" y2="80" stroke="#64748b" stroke-width="2"/>
-    ${villes}
-    ${chips}
+    if(v.star) return `<g><text x="${v.x}" y="${v.y+7}" text-anchor="middle" font-size="22">📍</text>
+      <text x="${v.x}" y="${v.y-14}" text-anchor="middle" font-size="13.5" font-weight="800" fill="#1a2e05" paint-order="stroke" stroke="#fff" stroke-width="3">Nantua</text></g>`;
+    const edge=v.x>560; const tx=edge?v.x-9:v.x+9; const anchor=edge?'end':'start';
+    return `<g><rect x="${v.x-3}" y="${v.y-3}" width="6" height="6" fill="#1f2937"/>
+      <text x="${tx}" y="${v.y+4}" text-anchor="${anchor}" font-size="12.5" font-weight="700" fill="#1a2e05" paint-order="stroke" stroke="#fff" stroke-width="2.5">${esc(v.n)}</text></g>`; }).join('');
+  const relief=`
+    <ellipse cx="150" cy="250" rx="115" ry="140" fill="#b9c58f" opacity="0.55"/>
+    <ellipse cx="300" cy="175" rx="120" ry="110" fill="#aab97a" opacity="0.45"/>
+    <ellipse cx="470" cy="300" rx="185" ry="155" fill="#9caf6a" opacity="0.5"/>
+    <ellipse cx="580" cy="360" rx="140" ry="160" fill="#8a9d58" opacity="0.5"/>
+    <ellipse cx="360" cy="440" rx="150" ry="120" fill="#9caf6a" opacity="0.45"/>
+    <ellipse cx="610" cy="300" rx="80" ry="80" fill="#7e9150" opacity="0.45"/>`;
+  const snow=`
+    <path d="M600 306 l14 -24 l14 24 z" fill="#fff" opacity="0.92"/>
+    <path d="M579 452 l12 -20 l12 20 z" fill="#fff" opacity="0.88"/>`;
+  const borders=`
+    <path d="M330 150 Q 440 60 570 78 T 715 66" fill="none" stroke="#b3261e" stroke-width="2" stroke-dasharray="7 6" opacity="0.75"/>
+    <path d="M652 240 Q 700 370 660 520" fill="none" stroke="#b3261e" stroke-width="2" stroke-dasharray="7 6" opacity="0.75"/>`;
+  const countries=`
+    <g transform="translate(398,38)"><rect width="20" height="20" rx="2" fill="#d52b1e"/><rect x="8.5" y="4" width="3" height="12" fill="#fff"/><rect x="4" y="8.5" width="12" height="3" fill="#fff"/></g>
+    <text x="426" y="53" font-size="18" font-weight="800" fill="#b3261e" letter-spacing="1">SUISSE</text>
+    <text x="600" y="559" text-anchor="end" font-size="18" font-weight="800" fill="#b3261e" letter-spacing="1">ITALIE</text>
+    <g transform="translate(608,545)"><rect width="7" height="16" rx="1" fill="#008C45"/><rect x="7" width="7" height="16" fill="#fff"/><rect x="14" width="7" height="16" rx="1" fill="#CD212A"/></g>`;
+  const compass=`<g transform="translate(54,58)"><text x="0" y="-16" text-anchor="middle" font-size="15" font-weight="800" fill="#3f3f26">N</text>
+    <path d="M0 -12 l-6 17 h12 z" fill="#b3261e"/><line x1="0" y1="3" x2="0" y2="22" stroke="#3f3f26" stroke-width="2"/></g>`;
+  const svg=`<svg viewBox="0 0 720 600" width="100%" style="display:block;border-radius:16px;border:3px solid #7c6f4f">
+    <defs><linearGradient id="terr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9deb6"/><stop offset="1" stop-color="#bcc78d"/></linearGradient></defs>
+    <rect x="0" y="0" width="720" height="600" fill="url(#terr)"/>
+    ${relief}${snow}${borders}${countries}${compass}${villes}${chips}
   </svg>`;
   openModal(`<h3>🗺️ Carte des massifs</h3>
-    <p class="mini-note" style="text-align:left;padding:0 0 10px">Situation des massifs autour de <b>Nantua</b> 📍, avec quelques villes pour te repérer. Les couleurs regroupent les secteurs proches.</p>
-    ${svg}
-    <div style="display:flex;gap:14px;justify-content:center;margin-top:10px;font-size:12.5px;font-weight:700;color:var(--muted)">
-      <span>📍 = Nantua</span><span>● = ville repère</span><span>▬ = massif</span>
-    </div>`);
+    <p class="mini-note" style="text-align:left;padding:0 0 10px">Les massifs à ≤ 2h30 de <b>Nantua</b> 📍, façon carte de rando. <b style="color:#b3261e">Étiquettes rouges</b> = massifs · carrés sombres = villes repères.</p>
+    ${svg}`);
 }
 function majSearch(v){ RF.q=v; clearTimeout(window._st); window._st=setTimeout(runSearch,400); }
 async function runSearch(){
