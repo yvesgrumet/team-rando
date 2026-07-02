@@ -256,9 +256,20 @@ const SEED_RANDOS = [
   {nom:"La Pointe de Puvat",massif:"Bornes",denivele:1050,distance_km:11,duree_h:5.5,temps_voiture_min:95,difficulte:"Difficile",paysage:"Sommet",depart:"Le Petit-Bornand"},
   {nom:"Le Roc de Charmieux",massif:"Bornes",denivele:1000,distance_km:10,duree_h:5,temps_voiture_min:100,difficulte:"Difficile",paysage:"Sommet",depart:"Le Reposoir"},
   {nom:"Le Mont Lachat de Thônes",massif:"Bornes",denivele:800,distance_km:10,duree_h:4.5,temps_voiture_min:95,difficulte:"Moyen",paysage:"Panorama",depart:"Manigod"},
-  {nom:"La Tête du Torraz",massif:"Bornes",denivele:600,distance_km:9,duree_h:4,temps_voiture_min:90,difficulte:"Moyen",paysage:"Panorama",depart:"Saint-Jean-de-Sixt"}
+  {nom:"La Tête du Torraz",massif:"Bornes",denivele:600,distance_km:9,duree_h:4,temps_voiture_min:90,difficulte:"Moyen",paysage:"Panorama",depart:"Saint-Jean-de-Sixt"},
+  // ── 13ᵉ série : ÉCRINS (moyennes & difficiles, journée + bivouac) ──
+  {nom:"Le Lac Lauvitel",massif:"Écrins",denivele:750,distance_km:11,duree_h:5,temps_voiture_min:150,difficulte:"Moyen",paysage:"Lac",depart:"La Danchère (Bourg-d'Oisans)"},
+  {nom:"Le Plateau d'Emparis & Lacs Lérié/Noir",massif:"Écrins",denivele:700,distance_km:14,duree_h:5.5,temps_voiture_min:160,difficulte:"Moyen",paysage:"Lac",depart:"Le Chazelet (La Grave)"},
+  {nom:"Le Lac de la Muzelle",massif:"Écrins",denivele:1000,distance_km:12,duree_h:6,temps_voiture_min:160,difficulte:"Difficile",paysage:"Lac",depart:"Bourg-d'Arud (Vénosc)"},
+  {nom:"Le Lac du Goléon",massif:"Écrins",denivele:900,distance_km:12,duree_h:5.5,temps_voiture_min:160,difficulte:"Difficile",paysage:"Lac",depart:"Les Hières (Villar-d'Arène)"},
+  {nom:"La Tête de la Maye",massif:"Écrins",denivele:1000,distance_km:9,duree_h:5,temps_voiture_min:165,difficulte:"Difficile",paysage:"Panorama",depart:"La Bérarde"},
+  {nom:"Le Lac de la Douche & Alpe de Villar d'Arène",massif:"Écrins",denivele:600,distance_km:12,duree_h:4.5,temps_voiture_min:160,difficulte:"Moyen",paysage:"Lac",depart:"Villar-d'Arène"},
+  {nom:"Refuge du Glacier Blanc & Pré de Madame Carle",massif:"Écrins",denivele:900,distance_km:16,duree_h:9,temps_voiture_min:170,difficulte:"Difficile",paysage:"Glacier",depart:"Ailefroide (Pré de Madame Carle)",jours:2,refuge:"Refuge du Glacier Blanc"},
+  {nom:"Refuge du Sélé & Vallon du Sélé",massif:"Écrins",denivele:1100,distance_km:15,duree_h:9,temps_voiture_min:170,difficulte:"Difficile",paysage:"Glacier",depart:"Ailefroide",jours:2,refuge:"Refuge du Sélé"},
+  {nom:"Refuge Temple-Écrins par la Bérarde",massif:"Écrins",denivele:1000,distance_km:18,duree_h:9,temps_voiture_min:165,difficulte:"Difficile",paysage:"Sommet",depart:"La Bérarde",jours:2,refuge:"Refuge Temple-Écrins"},
+  {nom:"Refuge de la Pilatte",massif:"Écrins",denivele:1150,distance_km:20,duree_h:10,temps_voiture_min:165,difficulte:"Très difficile",paysage:"Glacier",depart:"La Bérarde",jours:2,refuge:"Refuge de la Pilatte"}
 ];
-const SEED_VERSION = 13;
+const SEED_VERSION = 14;
 
 /* ─────────────────────────────  Saints / Fête du jour  ───────────────────── */
 const SAINTS={"01-01":"Marie","01-02":"Basile","01-03":"Geneviève","01-04":"Odilon","01-05":"Édouard","01-06":"Mélaine","01-07":"Raymond","01-08":"Lucien","01-09":"Alix","01-10":"Guillaume","01-11":"Pauline","01-12":"Tatiana","01-13":"Yvette","01-14":"Nina","01-15":"Rémi","01-16":"Marcel","01-17":"Roseline","01-18":"Prisca","01-19":"Marius","01-20":"Sébastien","01-21":"Agnès","01-22":"Vincent","01-23":"Barnard","01-24":"François de Sales","01-25":"Conversion de Paul","01-26":"Paule","01-27":"Angèle","01-28":"Thomas d'Aquin","01-29":"Gildas","01-30":"Martine","01-31":"Marcelle","02-01":"Ella","02-02":"Présentation","02-03":"Blaise","02-04":"Véronique","02-05":"Agathe","02-06":"Gaston","02-07":"Eugénie","02-08":"Jacqueline","02-09":"Apolline","02-10":"Arnaud","02-11":"N.-D. de Lourdes","02-12":"Félix","02-13":"Béatrice","02-14":"Valentin","02-15":"Claude","02-16":"Julienne","02-17":"Alexis","02-18":"Bernadette","02-19":"Gabin","02-20":"Aimée","02-21":"Pierre Damien","02-22":"Isabelle","02-23":"Lazare","02-24":"Modeste","02-25":"Roméo","02-26":"Nestor","02-27":"Honorine","02-28":"Romain","02-29":"Auguste","03-01":"Aubin","03-02":"Charles le Bon","03-03":"Guénolé","03-04":"Casimir","03-05":"Olive","03-06":"Colette","03-07":"Félicité","03-08":"Jean de Dieu","03-09":"Françoise","03-10":"Vivien","03-11":"Rosine","03-12":"Justine","03-13":"Rodrigue","03-14":"Mathilde","03-15":"Louise","03-16":"Bénédicte","03-17":"Patrice","03-18":"Cyrille","03-19":"Joseph","03-20":"Herbert","03-21":"Clémence","03-22":"Léa","03-23":"Victorien","03-24":"Catherine de Suède","03-25":"Annonciation","03-26":"Larissa","03-27":"Habib","03-28":"Gontran","03-29":"Gwladys","03-30":"Amédée","03-31":"Benjamin","04-01":"Hugues","04-02":"Sandrine","04-03":"Richard","04-04":"Isidore","04-05":"Irène","04-06":"Marcellin","04-07":"J.-B. de la Salle","04-08":"Julie","04-09":"Gautier","04-10":"Fulbert","04-11":"Stanislas","04-12":"Jules","04-13":"Ida","04-14":"Maxime","04-15":"Paterne","04-16":"Benoît-Joseph","04-17":"Anicet","04-18":"Parfait","04-19":"Emma","04-20":"Odette","04-21":"Anselme","04-22":"Alexandre","04-23":"Georges","04-24":"Fidèle","04-25":"Marc","04-26":"Alida","04-27":"Zita","04-28":"Valérie","04-29":"Catherine de Sienne","04-30":"Robert","05-01":"Fête du Travail","05-02":"Boris","05-03":"Philippe & Jacques","05-04":"Sylvain","05-05":"Judith","05-06":"Prudence","05-07":"Gisèle","05-08":"Victoire 1945","05-09":"Pacôme","05-10":"Solange","05-11":"Estelle","05-12":"Achille","05-13":"Rolande","05-14":"Matthias","05-15":"Denise","05-16":"Honoré","05-17":"Pascal","05-18":"Éric","05-19":"Yves","05-20":"Bernardin","05-21":"Constantin","05-22":"Émile","05-23":"Didier","05-24":"Donatien","05-25":"Sophie","05-26":"Bérenger","05-27":"Augustin","05-28":"Germain","05-29":"Aymar","05-30":"Ferdinand","05-31":"Visitation","06-01":"Justin","06-02":"Blandine","06-03":"Kévin","06-04":"Clotilde","06-05":"Igor","06-06":"Norbert","06-07":"Gilbert","06-08":"Médard","06-09":"Diane","06-10":"Landry","06-11":"Barnabé","06-12":"Guy","06-13":"Antoine de Padoue","06-14":"Élisée","06-15":"Germaine","06-16":"J.-F. Régis","06-17":"Hervé","06-18":"Léonce","06-19":"Romuald","06-20":"Silvère","06-21":"Rodolphe","06-22":"Alban","06-23":"Audrey","06-24":"Jean-Baptiste","06-25":"Prosper","06-26":"Anthelme","06-27":"Fernand","06-28":"Irénée","06-29":"Pierre & Paul","06-30":"Martial","07-01":"Thierry","07-02":"Martinien","07-03":"Thomas","07-04":"Florent","07-05":"Antoine","07-06":"Mariette","07-07":"Raoul","07-08":"Thibaut","07-09":"Amandine","07-10":"Ulrich","07-11":"Benoît","07-12":"Olivier","07-13":"Henri & Joël","07-14":"Fête Nationale","07-15":"Donald","07-16":"N.-D. du Mont-Carmel","07-17":"Charlotte","07-18":"Frédéric","07-19":"Arsène","07-20":"Marina","07-21":"Victor","07-22":"Marie-Madeleine","07-23":"Brigitte","07-24":"Christine","07-25":"Jacques","07-26":"Anne & Joachim","07-27":"Nathalie","07-28":"Samson","07-29":"Marthe","07-30":"Juliette","07-31":"Ignace de Loyola","08-01":"Alphonse","08-02":"Julien Eymard","08-03":"Lydie","08-04":"J.-M. Vianney","08-05":"Abel","08-06":"Transfiguration","08-07":"Gaétan","08-08":"Dominique","08-09":"Amour","08-10":"Laurent","08-11":"Claire","08-12":"Clarisse","08-13":"Hippolyte","08-14":"Évrard","08-15":"Assomption","08-16":"Armel","08-17":"Hyacinthe","08-18":"Hélène","08-19":"Jean Eudes","08-20":"Bernard","08-21":"Christophe","08-22":"Fabrice","08-23":"Rose de Lima","08-24":"Barthélemy","08-25":"Louis","08-26":"Natacha","08-27":"Monique","08-28":"Augustin","08-29":"Sabine","08-30":"Fiacre","08-31":"Aristide","09-01":"Gilles","09-02":"Ingrid","09-03":"Grégoire","09-04":"Rosalie","09-05":"Raïssa","09-06":"Bertrand","09-07":"Reine","09-08":"Nativité de Marie","09-09":"Alain","09-10":"Inès","09-11":"Adelphe","09-12":"Apollinaire","09-13":"Aimé","09-14":"La Sainte-Croix","09-15":"Roland","09-16":"Édith","09-17":"Renaud","09-18":"Nadège","09-19":"Émilie","09-20":"Davy","09-21":"Matthieu","09-22":"Maurice","09-23":"Constant","09-24":"Thècle","09-25":"Hermann","09-26":"Côme & Damien","09-27":"Vincent de Paul","09-28":"Venceslas","09-29":"Michel, Gabriel, Raphaël","09-30":"Jérôme","10-01":"Thérèse de l'E.-J.","10-02":"Léger","10-03":"Gérard","10-04":"François d'Assise","10-05":"Fleur","10-06":"Bruno","10-07":"Serge","10-08":"Pélagie","10-09":"Denis","10-10":"Ghislain","10-11":"Firmin","10-12":"Wilfried","10-13":"Géraud","10-14":"Juste","10-15":"Thérèse d'Avila","10-16":"Edwige","10-17":"Baudouin","10-18":"Luc","10-19":"René","10-20":"Adeline","10-21":"Céline","10-22":"Élodie","10-23":"Jean de Capistran","10-24":"Florentin","10-25":"Crépin","10-26":"Dimitri","10-27":"Émeline","10-28":"Simon & Jude","10-29":"Narcisse","10-30":"Bienvenue","10-31":"Quentin","11-01":"Toussaint","11-02":"Défunts","11-03":"Hubert","11-04":"Charles","11-05":"Sylvie","11-06":"Bertille","11-07":"Carine","11-08":"Geoffroy","11-09":"Théodore","11-10":"Léon","11-11":"Armistice / Martin","11-12":"Christian","11-13":"Brice","11-14":"Sidoine","11-15":"Albert","11-16":"Marguerite","11-17":"Élisabeth","11-18":"Aude","11-19":"Tanguy","11-20":"Edmond","11-21":"Présentation de Marie","11-22":"Cécile","11-23":"Clément","11-24":"Flora","11-25":"Catherine","11-26":"Delphine","11-27":"Séverin","11-28":"Jacques de la M.","11-29":"Saturnin","11-30":"André","12-01":"Florence","12-02":"Viviane","12-03":"François-Xavier","12-04":"Barbara","12-05":"Gérald","12-06":"Nicolas","12-07":"Ambroise","12-08":"Immaculée Conception","12-09":"Pierre Fourier","12-10":"Romaric","12-11":"Daniel","12-12":"Jeanne F.-C.","12-13":"Lucie","12-14":"Odile","12-15":"Ninon","12-16":"Alice","12-17":"Gaël","12-18":"Gatien","12-19":"Urbain","12-20":"Abraham","12-21":"Pierre C.","12-22":"Françoise-Xavière","12-23":"Armand","12-24":"Adèle","12-25":"Noël","12-26":"Étienne","12-27":"Jean","12-28":"Saints Innocents","12-29":"David","12-30":"Roger","12-31":"Sylvestre"};
@@ -722,7 +733,8 @@ function openSortie(id){
   openModal(`
     <div class="dhead"><div class="s">${fmtLong(s.date)}</div><div class="t">${esc(nom)}</div><div class="s">Organisé par ${esc(org?org.prenom:'?')}</div></div>
     ${covoit}
-    ${r?`<div class="poll-final">✅ Rando retenue${sortieOptions(s).length>1?` · ${sortieOptions(s).length} proposées au vote`:''}</div>
+    ${(s.programme&&s.programme.length) ? sejourHtml(id)
+      : r?`<div class="poll-final">✅ Rando retenue${sortieOptions(s).length>1?` · ${sortieOptions(s).length} proposées au vote`:''}</div>
         <div class="chips" style="margin-bottom:12px">${randoChips(r)}</div>${r.depart?`<p class="mini-note" style="text-align:left;padding:0 0 10px">📍 Départ rando : <b>${esc(r.depart)}</b>${r.massif||r.region?` · massif ${esc(r.massif||r.region)}`:''}</p>`:''}${siteButtons(r)}
         ${isOrga?`<button class="btn btn-ghost btn-sm" style="margin-bottom:12px" onclick="remettreVote('${id}')">↩︎ Remettre au vote</button>`:''}`
       : sortieOptions(s).length ? sondageHtml(id)
@@ -738,6 +750,7 @@ function openSortie(id){
     <div class="chips" style="gap:8px">
       ${iJoin(id)?(s.organisateurId===ME.id?'':`<button class="btn btn-danger btn-sm" onclick="quitterSortie('${id}')">Me désinscrire</button>`):`<button class="btn btn-sm" onclick="rejoindreSortie('${id}')">✓ Je viens !</button>`}
       <button class="btn btn-soft btn-sm" onclick="openSuggestions('${id}')">💡 Suggestions rando</button>
+      ${isOrga?`<button class="btn btn-soft btn-sm" onclick="openSejour('${id}')">🏔️ Séjour</button>`:''}
       <button class="btn btn-soft btn-sm" onclick="openChan('sortie_${id}','sorties')">💬 Discussion</button>
       ${isOrga?`<button class="btn btn-ghost btn-sm" onclick="openEditSortie('${id}')">✏️ Modifier</button>`:''}
       ${isOrga?`<button class="btn btn-danger btn-sm" onclick="supprSortie('${id}')">🗑️</button>`:''}
@@ -813,7 +826,7 @@ async function majSortie(id){
 }
 
 let SUGG={mode:'todo',voiture:0};
-function openSuggestions(sid){ SUGG={mode:'todo',voiture:0}; renderSuggModal(sid); }
+function openSuggestions(sid){ SUGG={mode:'todo',voiture:0,q:''}; renderSuggModal(sid); }
 function suggList(sid){
   const partIds=partsOf(sid).map(p=>p.membreId);
   const done=new Set(arr(CACHE.faites).filter(f=>partIds.includes(f.membreId)).map(f=>f.randoId));
@@ -821,6 +834,7 @@ function suggList(sid){
   if(SUGG.mode==='todo') list=list.filter(r=>!done.has(r.id));
   else if(SUGG.mode==='done') list=list.filter(r=>done.has(r.id));
   if(SUGG.voiture) list=list.filter(r=>(r.temps_voiture_min||999)<=SUGG.voiture);
+  if(SUGG.q){ const q=SUGG.q.toLowerCase(); list=list.filter(r=>(r.nom+' '+(r.depart||'')+' '+(r.massif||r.region||'')+' '+(r.paysage||'')).toLowerCase().includes(q)); }
   list.sort((a,b)=>faitesOf(a.id).length-faitesOf(b.id).length || (a.temps_voiture_min||0)-(b.temps_voiture_min||0));
   return list;
 }
@@ -829,8 +843,9 @@ function renderSuggModal(sid){
   const voits=[[0,'🚗 Toutes durées'],[30,'≤30min'],[60,'≤1h'],[90,'≤1h30'],[150,'≤2h30']];
   openModal(`
     <h3>💡 Choisir une rando</h3>
-    <button class="btn btn-sun btn-full btn-sm" style="margin-bottom:10px" onclick="addRandoForSortie('${sid}')">➕ Ajouter une rando absente (lien Visorando…)</button>
-    <p class="mini-note" style="text-align:left;padding:0 0 8px">Ou choisis dans le catalogue. Par défaut : les randos que <b>personne parmi les inscrits</b> n'a faites.</p>
+    <div class="search-in" style="margin-bottom:10px">🔍<input id="sugg-search" placeholder="Chercher une rando, un lieu…" value="${esc(SUGG.q||'')}" oninput="setSuggQ('${sid}',this.value)"></div>
+    <button class="btn btn-sun btn-full btn-sm" style="margin-bottom:10px" onclick="addRandoForSortie('${sid}')">➕ Ajouter une rando absente (pré-remplir avec un lien Visorando…)</button>
+    <p class="mini-note" style="text-align:left;padding:0 0 8px">Cherche dans le catalogue, ou ajoute-la via son lien. Par défaut : les randos que <b>personne parmi les inscrits</b> n'a faites.</p>
     <div class="filters" style="margin:0 -4px 8px;border:none;padding:0">
       ${modes.map(([v,l])=>`<span class="fchip ${SUGG.mode===v?'on':''}" onclick="setSugg('${sid}','mode','${v}')">${l}</span>`).join('')}
     </div>
@@ -840,6 +855,7 @@ function renderSuggModal(sid){
     <div id="sugg-list">${suggHtml(sid,suggList(sid))}</div>`);
 }
 function setSugg(sid,key,val){ SUGG[key]=val; renderSuggModal(sid); }
+function setSuggQ(sid,v){ SUGG.q=v; const el=$('sugg-list'); if(el) el.innerHTML=suggHtml(sid,suggList(sid)); } // maj de la liste seule pour garder le focus
 function suggHtml(sid,list){
   if(!list.length) return '<div class="empty"><div class="e-ic">🤷</div><p>Aucune rando avec ces filtres.<br>Change le filtre ci-dessus.</p></div>';
   const s=getS(sid); const proposed=new Set(Object.keys((s&&s.options)||{}));
@@ -912,6 +928,65 @@ function sondageHtml(sid){
   </div>`;
 }
 
+/* ── Séjour multi-jours (rando + hébergement par jour) ── */
+let SEJOUR=[], SEJOUR_SID=null, _pickCb=null, _pickTitle='', _pickQ='';
+function sejourHtml(sid){
+  const s=getS(sid); const prog=(s&&s.programme)||[]; if(!prog.length) return '';
+  const isOrga=s.organisateurId===ME.id||ME.isAdmin;
+  const rows=prog.map((d,i)=>{ const r=d.r?getR(d.r):null; const heb=d.h==='tente'?'⛺ Tente / bivouac':'🏠 Refuge';
+    return `<div class="poll-opt"><div class="poll-main">
+      <div class="poll-nom">Jour ${i+1} — ${r?esc(r.nom):'<i>rando à choisir</i>'}</div>
+      <div class="poll-meta">${[r?(r.massif||r.region):'', r&&r.difficulte?r.difficulte:'', r&&r.temps_voiture_min!=null?'🚗 '+fmtVoiture(r.temps_voiture_min):'', heb+(d.lieu?' · '+esc(d.lieu):'')].filter(Boolean).join(' · ')}</div>
+    </div>${r?`<button class="btn btn-ghost btn-sm" onclick="openRando('${r.id}')">Détails</button>`:''}</div>`; }).join('');
+  return `<div class="card" style="margin:0 0 12px">
+    <div class="card-t" style="font-size:15px">🏔️ Séjour · ${prog.length} jour${prog.length>1?'s':''}</div>
+    ${rows}
+    ${isOrga?`<button class="btn btn-soft btn-full btn-sm" style="margin-top:6px" onclick="openSejour('${sid}')">✏️ Modifier le séjour</button>`:''}
+  </div>`;
+}
+function openSejour(sid){ const s=getS(sid); SEJOUR=JSON.parse(JSON.stringify((s&&s.programme)||[])); SEJOUR_SID=sid; if(!SEJOUR.length) SEJOUR.push({r:'',h:'refuge',lieu:''}); renderSejour(); }
+function renderSejour(){
+  const sid=SEJOUR_SID; const existe=!!(getS(sid)&&getS(sid).programme&&getS(sid).programme.length);
+  const rows=SEJOUR.map((d,i)=>{ const r=d.r?getR(d.r):null;
+    return `<div class="card" style="margin:0 0 10px;padding:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b>Jour ${i+1}</b>${SEJOUR.length>1?`<span class="poll-act" onclick="removeSejourDay(${i})">retirer</span>`:''}</div>
+      <button class="btn btn-soft btn-full btn-sm" onclick="pickSejourRando(${i})">${r?'🥾 '+esc(r.nom):'🔍 Choisir la rando du jour'}</button>
+      ${r?`<div class="mini-note" style="text-align:left;padding:4px 0 0">${[r.massif||r.region,r.difficulte,r.temps_voiture_min!=null?'🚗 '+fmtVoiture(r.temps_voiture_min):''].filter(Boolean).join(' · ')}</div>`:''}
+      <div class="chips" style="margin-top:10px;gap:6px">
+        <span class="fchip ${d.h==='refuge'?'on':''}" onclick="setSejourHeb(${i},'refuge')">🏠 Refuge</span>
+        <span class="fchip ${d.h==='tente'?'on':''}" onclick="setSejourHeb(${i},'tente')">⛺ Tente / bivouac</span>
+      </div>
+      <input class="msg-input" style="margin-top:8px;background:#f1f8fe" placeholder="Nom du refuge / lieu de bivouac (facultatif)" value="${esc(d.lieu||'')}" oninput="SEJOUR[${i}].lieu=this.value">
+    </div>`; }).join('');
+  openModal(`<h3>🏔️ Organiser un séjour</h3>
+    <p class="mini-note" style="text-align:left;padding:0 0 10px">Un jour = une rando + un hébergement (<b>refuge</b> ou <b>tente/bivouac</b>). Ajoute autant de jours que nécessaire.</p>
+    ${rows}
+    <button class="btn btn-soft btn-full btn-sm" style="margin-bottom:10px" onclick="addSejourDay()">➕ Ajouter un jour</button>
+    <button class="btn btn-full btn-lg" onclick="saveSejour()">Enregistrer le séjour ✓</button>
+    ${existe?`<button class="btn btn-danger btn-full btn-sm" style="margin-top:8px" onclick="deleteSejour()">Supprimer le séjour</button>`:''}`);
+}
+function addSejourDay(){ SEJOUR.push({r:'',h:'refuge',lieu:''}); renderSejour(); }
+function removeSejourDay(i){ SEJOUR.splice(i,1); renderSejour(); }
+function setSejourHeb(i,h){ SEJOUR[i].h=h; renderSejour(); }
+function pickSejourRando(i){ openRandoPicker('Rando du jour '+(i+1), rid=>{ SEJOUR[i].r=rid; renderSejour(); }); }
+async function saveSejour(){ const sid=SEJOUR_SID; await DB.set('sorties/'+sid+'/programme', SEJOUR); toast('Séjour enregistré 🏔️'); openSortie(sid); }
+async function deleteSejour(){ const sid=SEJOUR_SID; if(!confirm('Supprimer le programme du séjour ?')) return; await DB.remove('sorties/'+sid+'/programme'); toast('Séjour supprimé'); openSortie(sid); }
+/* Sélecteur de rando dans la base (recherche) — réutilisable */
+function openRandoPicker(title, cb){ _pickCb=cb; _pickTitle=title||'Choisir une rando'; _pickQ=''; renderPick(); }
+function pickHtml(list){ if(!list.length) return '<div class="empty"><div class="e-ic">🤷</div><p>Aucune rando.<br>Change la recherche.</p></div>';
+  return list.map(r=>`<div class="sugg" onclick="choosePick('${r.id}')" style="cursor:pointer">
+    <div class="n">${esc(r.nom)}</div>
+    <div class="m">${[r.massif||r.region,r.difficulte,r.temps_voiture_min!=null?'🚗 '+fmtVoiture(r.temps_voiture_min):'',isBivouac(r)?'🏕️ 2j':''].filter(Boolean).join(' · ')}</div></div>`).join(''); }
+function pickFilter(){ const q=(_pickQ||'').toLowerCase(); let list=arr(CACHE.randos);
+  if(q) list=list.filter(r=>(r.nom+' '+(r.depart||'')+' '+(r.massif||r.region||'')+' '+(r.paysage||'')).toLowerCase().includes(q));
+  list.sort((a,b)=>(a.temps_voiture_min||999)-(b.temps_voiture_min||999)||a.nom.localeCompare(b.nom)); return list.slice(0,50); }
+function renderPick(){ openModal(`<h3>🔍 ${esc(_pickTitle)}</h3>
+    <div class="search-in" style="margin-bottom:10px">🔍<input id="pick-search" placeholder="Chercher une rando, un lieu…" value="${esc(_pickQ)}" oninput="_pickQ=this.value;updatePick()"></div>
+    <div id="pick-list">${pickHtml(pickFilter())}</div>`);
+  setTimeout(()=>{ const el=$('pick-search'); if(el) el.focus(); },50); }
+function updatePick(){ const el=$('pick-list'); if(el) el.innerHTML=pickHtml(pickFilter()); }
+function choosePick(rid){ const cb=_pickCb; _pickCb=null; if(cb) cb(rid); }
+
 /* ════════════════════════════════  RANDOS  ════════════════════════════════ */
 let RF={};   // filtres randos
 function renderRandos(){
@@ -962,7 +1037,8 @@ const CARTE_MASSIFS=[
   {n:'Chartreuse',x:275,y:458},
   {n:'Terres Froides',x:130,y:432},
   {n:'Belledonne',x:330,y:498},
-  {n:'Vercors',x:190,y:522}
+  {n:'Vercors',x:190,y:522},
+  {n:'Écrins',x:410,y:560}
 ];
 const CARTE_VILLES=[
   {n:'Nantua',x:182,y:227,star:true},
