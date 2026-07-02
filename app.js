@@ -1444,7 +1444,7 @@ function renderMessages(){
     </div>
     ${inner}`;
   if(ac){ const key=ac+':'+chanMsgs(ac).length; const grow=key!==_lastChatKey; _lastChatKey=key; scrollMsgsBottom(grow, prevTop, prevAtBottom); }
-  const inp=$('msg-input'); if(inp){ inp.value=keepVal; if(keepFocus) inp.focus(); }
+  const inp=$('msg-input'); if(inp){ inp.value=keepVal; growMsgInput(inp); if(keepFocus) inp.focus(); }
   markMessagesRead(null); // on est dans la messagerie → tout est considéré vu (efface le badge)
 }
 function scrollMsgsBottom(scroll, prevTop, prevAtBottom){
@@ -1468,6 +1468,13 @@ function scrollMsgsBottom(scroll, prevTop, prevAtBottom){
   setTimeout(apply,150); setTimeout(apply,450);
   if(scroll) ml.querySelectorAll('img').forEach(im=>{ if(!im.complete) im.addEventListener('load', ()=>{ apply(); }, {once:true}); });
 }
+function growMsgInput(el){ if(!el) return; el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
+function msgKey(e){
+  // Ordinateur : Entrée envoie, Maj+Entrée = saut de ligne. Mobile (tactile) : Entrée = saut de ligne, envoi via ➤.
+  if(e.key!=='Enter') return;
+  const touch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
+  if(!touch && !e.shiftKey){ e.preventDefault(); sendMessage(); }
+}
 function chatBlock(chan){
   const list=chanMsgs(chan);
   const head = chan==='general' ? '' : `<div class="chat-head"><button class="btn btn-ghost btn-sm" onclick="backToList()">←</button> <b>${esc(chanTitle(chan))}</b></div>`;
@@ -1475,7 +1482,7 @@ function chatBlock(chan){
     <div id="msg-list" class="msg-list">${list.length?list.map(msgBubble).join(''):`<div class="empty"><div class="e-ic">💬</div><p>${chan==='general'?'Lance la discussion avec la team !':'Aucun message ici.<br>Écris le premier !'}</p></div>`}</div>
     <div class="msg-bar">
       <button class="msg-photo" onclick="sendPhotoMsg()" aria-label="Envoyer une photo">📷</button>
-      <input id="msg-input" class="msg-input" placeholder="Écris un message…" autocomplete="off" onkeydown="if(event.key==='Enter')sendMessage()">
+      <textarea id="msg-input" class="msg-input" rows="1" placeholder="Écris un message…" autocomplete="off" oninput="growMsgInput(this)" onkeydown="msgKey(event)"></textarea>
       <button class="msg-send" onclick="sendMessage()" aria-label="Envoyer">➤</button>
     </div>`;
 }
@@ -1555,7 +1562,7 @@ function notifyMsg(chan,t){
 async function sendMessage(){
   const inp=$('msg-input'); if(!inp) return; const t=inp.value.trim(); if(!t) return;
   const chan=activeChan()||'general';
-  inp.value=''; maybeEnableNotifs();
+  inp.value=''; growMsgInput(inp); maybeEnableNotifs();
   await DB.push('messages',{ membreId:ME.id, channel:chan, texte:t, createdAt:new Date().toISOString(), vu:{[ME.id]:true} });
   notifyMsg(chan,t);
 }

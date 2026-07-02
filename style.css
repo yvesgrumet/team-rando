@@ -330,7 +330,7 @@ h1,h2,h3,.fred{font-family:'Fredoka',sans-serif;font-weight:600;}
 .msg-seen{font-size:10.5px;font-weight:800;margin-top:3px;opacity:.85}
 .msg-bub.mine .msg-seen{color:#dcfce7}
 .msg-bar{position:fixed;bottom:var(--nav-h);left:50%;transform:translateX(-50%);width:100%;max-width:480px;
-  background:#fff;border-top:1px solid var(--line);display:flex;gap:8px;padding:10px 12px;z-index:90}
+  background:#fff;border-top:1px solid var(--line);display:flex;align-items:flex-end;gap:8px;padding:10px 12px;z-index:90}
 .emoji-btn{border:none;background:none;font-size:25px;cursor:pointer;padding:6px;border-radius:12px;line-height:1}
 .emoji-btn:active{background:#eef6ff;transform:scale(.9)}
 .msg-col{display:flex;flex-direction:column;min-width:0;max-width:100%}
@@ -341,7 +341,8 @@ h1,h2,h3,.fred{font-family:'Fredoka',sans-serif;font-weight:600;}
   border-radius:14px;padding:1px 8px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:var(--shadow-sm)}
 .react-chip.mine{background:#e9f7ef;border-color:#10b981;color:#0b7a52}
 .msg-input{flex:1;border:2px solid var(--line);border-radius:22px;padding:11px 16px;font-size:16px;
-  font-family:'Nunito',sans-serif;outline:none;background:#f1f8fe;color:var(--ink)}
+  font-family:'Nunito',sans-serif;outline:none;background:#f1f8fe;color:var(--ink);
+  resize:none;line-height:1.35;max-height:120px;overflow-y:auto;display:block}
 .msg-input:focus{border-color:var(--sky)}
 .msg-send{width:46px;height:46px;border-radius:50%;border:none;background:var(--grad-head);color:#fff;
   font-size:19px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(20,160,140,.3)}
