@@ -457,9 +457,14 @@ function seedIfNeeded(){
 }
 
 let _rt;
+function msgInputFocused(){ const el=document.activeElement; return !!(el && el.id==='msg-input'); }
 function afterData(){
   if(ME && CACHE.membres[ME.id]) ME={id:ME.id, ...CACHE.membres[ME.id]};
-  clearTimeout(_rt); _rt=setTimeout(()=>{ if(appReady){ renderView(CURRENT); updateBadges(); } },70);
+  clearTimeout(_rt); _rt=setTimeout(()=>{ if(!appReady) return;
+    // Ne pas reconstruire la messagerie pendant la saisie (sinon frappe saccadée + suggestions/T9 coupées)
+    if(!(CURRENT==='messages' && msgInputFocused())) renderView(CURRENT);
+    updateBadges();
+  },70);
 }
 
 /* ════════════════════════════  ACCÈS / PROFIL  ════════════════════════════ */
@@ -1494,7 +1499,7 @@ function chatBlock(chan){
     <div id="msg-list" class="msg-list">${list.length?list.map(msgBubble).join(''):`<div class="empty"><div class="e-ic">💬</div><p>${chan==='general'?'Lance la discussion avec la team !':'Aucun message ici.<br>Écris le premier !'}</p></div>`}</div>
     <div class="msg-bar">
       <button class="msg-photo" onclick="sendPhotoMsg()" aria-label="Envoyer une photo">📷</button>
-      <textarea id="msg-input" class="msg-input" rows="1" placeholder="Écris un message…" autocomplete="off" oninput="growMsgInput(this)" onkeydown="msgKey(event)"></textarea>
+      <textarea id="msg-input" class="msg-input" rows="1" placeholder="Écris un message…" autocapitalize="sentences" autocorrect="on" spellcheck="true" enterkeyhint="enter" oninput="growMsgInput(this)" onkeydown="msgKey(event)"></textarea>
       <button class="msg-send" onclick="sendMessage()" aria-label="Envoyer">➤</button>
     </div>`;
 }
@@ -1577,6 +1582,7 @@ async function sendMessage(){
   inp.value=''; growMsgInput(inp); maybeEnableNotifs();
   await DB.push('messages',{ membreId:ME.id, channel:chan, texte:t, createdAt:new Date().toISOString(), vu:{[ME.id]:true} });
   notifyMsg(chan,t);
+  if(CURRENT==='messages') renderMessages(); // le rafraîchissement auto est bloqué pendant la saisie → on affiche le message envoyé
 }
 function sendPhotoMsg(){
   const chan=activeChan()||'general'; maybeEnableNotifs();
