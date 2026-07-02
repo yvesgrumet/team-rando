@@ -1234,7 +1234,7 @@ function openRando(id){
       ${faits.length?faits.map(x=>`<div class="prow">${avatar(x.m,34)}<div style="min-width:0"><b>${esc(x.m.prenom)} ${esc(x.m.nom||'')}</b>${x.date_faite?`<div style="font-size:12px;color:var(--muted);font-weight:700">${fmtShort(x.date_faite)}${x.note?' · '+esc(x.note):''}</div>`:''}${(x.ressenti&&x.ressenti.length)?`<div class="chips" style="margin-top:4px">${x.ressenti.map(t=>`<span class="chip">${esc(t)}</span>`).join('')}</div>`:''}</div></div>`).join(''):'<p class="mini-note" style="text-align:left;padding:6px 0">Personne dans la team ne l\'a encore faite ! 🌟</p>'}
     </div>
     <div class="chips" style="margin-top:14px">
-      ${iDid(id)?`<button class="btn btn-ghost btn-sm" onclick="retirerFaite('${id}')">✗ Je ne l'ai plus faite</button><button class="btn btn-soft btn-sm" onclick="openRessenti('${id}')">💬 Mon ressenti</button>`:`<button class="btn btn-sm" onclick="openMarquerFaite('${id}')">✅ Je l'ai faite !</button>`}
+      ${iDid(id)?`<button class="btn btn-ghost btn-sm" onclick="retirerFaite('${id}')">✗ Je ne l'ai plus faite</button><button class="btn btn-soft btn-sm" onclick="openRessenti('${id}')">💬 Mon avis</button>`:`<button class="btn btn-sm" onclick="openMarquerFaite('${id}')">✅ Je l'ai faite !</button>`}
       <button class="btn btn-soft btn-sm" onclick="openChan('rando_${id}','randos')">💬 Commentaires</button>
       ${mine?`<button class="btn btn-ghost btn-sm" onclick="openEditRando('${id}')">✏️ Modifier</button>`:''}
       ${mine?`<button class="btn btn-danger btn-sm" onclick="supprRando('${id}')">🗑️</button>`:''}
@@ -1248,7 +1248,7 @@ function openMarquerFaite(id){
   const r=getR(id); _mfRess=[];
   openModal(`<h3>✅ ${esc(r.nom)}</h3>
     <div class="fg"><label>Quand l'as-tu faite ?</label><input type="date" id="mf-date" value="${todayStr()}"></div>
-    <div class="fg"><label>Ton ressenti (plusieurs choix possibles)</label><div id="ress-chips" class="filters" style="margin:0 -4px;border:none;padding:0">${ressChipsHtml()}</div></div>
+    <div class="fg"><label>Ton avis (plusieurs choix possibles)</label><div id="ress-chips" class="filters" style="margin:0 -4px;border:none;padding:0">${ressChipsHtml()}</div></div>
     <div class="fg"><label>Un mot (facultatif)</label><textarea id="mf-note" rows="2" placeholder="Vue magnifique au sommet…"></textarea></div>
     <button class="btn btn-full btn-lg" onclick="marquerFaite('${id}')">C'est fait ! 🎉</button>`);
 }
@@ -1259,12 +1259,12 @@ async function marquerFaite(id){
 function openRessenti(id){
   const mine=arr(CACHE.faites).find(f=>f.randoId===id&&f.membreId===ME.id); if(!mine) return;
   _mfRess=(mine.ressenti||[]).slice(); const r=getR(id);
-  openModal(`<h3>💬 Ton ressenti · ${esc(r.nom)}</h3>
+  openModal(`<h3>💬 Mon avis · ${esc(r.nom)}</h3>
     <p class="mini-note" style="text-align:left;padding:0 0 8px">Choisis un ou plusieurs mots — toute la team les verra sur la rando.</p>
     <div id="ress-chips" class="filters" style="margin:0 -4px 14px;border:none;padding:0">${ressChipsHtml()}</div>
     <button class="btn btn-full btn-lg" onclick="saveRessenti('${id}','${mine.id}')">Enregistrer ✓</button>`);
 }
-async function saveRessenti(id,fid){ await DB.update('faites/'+fid,{ressenti:_mfRess.slice()}); toast('Ressenti enregistré 💬'); openRando(id); }
+async function saveRessenti(id,fid){ await DB.update('faites/'+fid,{ressenti:_mfRess.slice()}); toast('Avis enregistré 💬'); openRando(id); }
 async function retirerFaite(id){
   const mine=arr(CACHE.faites).filter(f=>f.randoId===id&&f.membreId===ME.id);
   for(const f of mine) await DB.remove('faites/'+f.id);
