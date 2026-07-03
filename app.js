@@ -1460,8 +1460,8 @@ function renderMessages(){
   const lastTab=lastActivityTab();
   $('view-messages').innerHTML=`
     <div class="phead"><h2>💬 Messages</h2><div class="sub">${online.length} en ligne${online.length?' · '+online.map(m=>esc(m.prenom)).join(', '):''}</div></div>
-    <div class="filters" style="position:sticky;top:0;z-index:16">
-      ${tabs.map(([v,l])=>{const u=tabUnread(v); const isLast=lastTab===v&&MTAB!==v; return `<span class="fchip ${MTAB===v?'on':''}${isLast?' last-chan':''}" onclick="setMTab('${v}')">${l}${u?` <span class="disc-badge" style="display:inline-flex;height:17px;min-width:17px;font-size:10px">${u}</span>`:''}</span>`;}).join('')}
+    <div class="filters" style="position:sticky;top:0;z-index:16;display:flex;flex-wrap:nowrap;gap:5px;overflow:visible;padding:8px 10px">
+      ${tabs.map(([v,l])=>{const u=tabUnread(v); const isLast=lastTab===v&&MTAB!==v; return `<span class="fchip ${MTAB===v?'on':''}${isLast?' last-chan':''}" style="flex:1 1 0;min-width:0;text-align:center;padding:8px 2px;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" onclick="setMTab('${v}')">${l}${u?` <span class="disc-badge" style="display:inline-flex;height:15px;min-width:15px;font-size:9px">${u}</span>`:''}</span>`;}).join('')}
     </div>
     ${inner}`;
   if(ac){ const key=ac+':'+chanMsgs(ac).length; const grow=key!==_lastChatKey; _lastChatKey=key; scrollMsgsBottom(grow, prevTop, prevAtBottom); }
