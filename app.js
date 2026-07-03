@@ -1413,23 +1413,26 @@ function unreadInChan(chan){ if(!ME) return 0; return chanMsgs(chan).filter(m=>m
 function tabUnread(tab){
   if(!ME) return 0;
   if(tab==='general') return unreadInChan('general');
+  if(tab==='infos') return unreadInChan('infos');
   const pref = tab==='sorties'?'sortie_':'rando_';
   return msgsArr().filter(m=>m.membreId!==ME.id && !(m.vu&&m.vu[ME.id]) && chanOf(m).startsWith(pref)).length;
 }
 function chanTitle(chan){
   if(chan==='general') return '💬 Tchat général';
+  if(chan==='infos') return '📢 Infos';
   if(chan.indexOf('sortie_')===0){ const s=getS(chan.slice(7)); const r=s&&s.randoId?getR(s.randoId):null; return '📅 '+(r?r.nom:(s&&s.titre)||'Sortie')+(s?' · '+fmtShort(s.date):''); }
   if(chan.indexOf('rando_')===0){ const r=getR(chan.slice(6)); return '🥾 '+(r?r.nom:'Rando'); }
   return '💬';
 }
-function activeChan(){ if(MTAB==='general') return 'general'; if(MCHAN && MCHAN!=='general') return MCHAN; return null; }
+function activeChan(){ if(MTAB==='general') return 'general'; if(MTAB==='infos') return 'infos'; if(MCHAN && MCHAN!=='general') return MCHAN; return null; }
 function lastMsg(){ const msgs=msgsArr(); if(!msgs.length) return null; return msgs.slice().sort((a,b)=>(a.createdAt||'').localeCompare(b.createdAt||'')).pop(); }
-function tabOfChan(c){ if(c==='general') return 'general'; if(c.indexOf('sortie_')===0) return 'sorties'; if(c.indexOf('rando_')===0) return 'randos'; return null; }
+function tabOfChan(c){ if(c==='general') return 'general'; if(c==='infos') return 'infos'; if(c.indexOf('sortie_')===0) return 'sorties'; if(c.indexOf('rando_')===0) return 'randos'; return null; }
 function lastActivityTab(){ const m=lastMsg(); return m?tabOfChan(chanOf(m)):null; }
 function lastActivityChan(){ const m=lastMsg(); return m?chanOf(m):null; }
 // Dernière conversation d'un onglet donné (la plus récente de la catégorie)
 function lastChanInTab(tab){
   if(tab==='general') return 'general';
+  if(tab==='infos') return 'infos';
   const pref = tab==='sorties'?'sortie_':'rando_';
   const ms=msgsArr().filter(m=>chanOf(m).indexOf(pref)===0).sort((a,b)=>(a.createdAt||'').localeCompare(b.createdAt||''));
   return ms.length?chanOf(ms[ms.length-1]):null;
@@ -1438,6 +1441,7 @@ function lastChanInTab(tab){
 function gotoLastConversation(){
   const lc=lastActivityChan();
   if(!lc||lc==='general'){ MTAB='general'; MCHAN='general'; return; }
+  if(lc==='infos'){ MTAB='infos'; MCHAN='infos'; return; }
   MTAB=tabOfChan(lc)||'general'; MCHAN=lc;
 }
 function setMTab(tab){ MTAB=tab; MCHAN = lastChanInTab(tab); renderMessages(); }
@@ -1447,7 +1451,7 @@ function backToList(){ MCHAN=null; renderMessages(); }
 /* ── Vue Messages ── */
 function renderMessages(){
   const online=onlineMembres();
-  const tabs=[['general','💬 Tchat'],['sorties','📅 Sorties'],['randos','🥾 Randos']];
+  const tabs=[['general','💬 Tchat'],['sorties','📅 Sorties'],['randos','🥾 Randos'],['infos','📢 Infos']];
   const ac=activeChan();
   const prev=$('msg-input'); const keepVal=prev?prev.value:''; const keepFocus=prev&&document.activeElement===prev;
   const prevMl=$('msg-list'); const prevTop=prevMl?prevMl.scrollTop:null;
@@ -1494,9 +1498,9 @@ function msgKey(e){
 }
 function chatBlock(chan){
   const list=chanMsgs(chan);
-  const head = chan==='general' ? '' : `<div class="chat-head"><button class="btn btn-ghost btn-sm" onclick="backToList()">←</button> <b>${esc(chanTitle(chan))}</b></div>`;
+  const head = (chan==='general'||chan==='infos') ? '' : `<div class="chat-head"><button class="btn btn-ghost btn-sm" onclick="backToList()">←</button> <b>${esc(chanTitle(chan))}</b></div>`;
   return `${head}
-    <div id="msg-list" class="msg-list">${list.length?list.map(msgBubble).join(''):`<div class="empty"><div class="e-ic">💬</div><p>${chan==='general'?'Lance la discussion avec la team !':'Aucun message ici.<br>Écris le premier !'}</p></div>`}</div>
+    <div id="msg-list" class="msg-list">${list.length?list.map(msgBubble).join(''):`<div class="empty"><div class="e-ic">${chan==='infos'?'📢':'💬'}</div><p>${chan==='general'?'Lance la discussion avec la team !':chan==='infos'?'Partage une info avec la team !<br>(matériel, météo, covoiturage…)':'Aucun message ici.<br>Écris le premier !'}</p></div>`}</div>
     <div class="msg-bar">
       <button class="msg-photo" onclick="sendPhotoMsg()" aria-label="Envoyer une photo">📷</button>
       <textarea id="msg-input" class="msg-input" rows="1" placeholder="Écris un message…" autocapitalize="sentences" autocorrect="on" spellcheck="true" enterkeyhint="enter" oninput="growMsgInput(this)" onkeydown="msgKey(event)"></textarea>
