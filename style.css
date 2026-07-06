@@ -336,6 +336,12 @@ h1,h2,h3,.fred{font-family:'Fredoka',sans-serif;font-weight:600;}
 .iv-hint{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 18px);left:50%;transform:translateX(-50%);
   background:rgba(0,0,0,.55);color:#fff;font-size:12.5px;font-weight:700;padding:6px 14px;border-radius:20px;
   transition:opacity .25s;pointer-events:none}
+.iv-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;
+  background:rgba(255,255,255,.85);color:#111;font-size:26px;font-weight:900;line-height:1;cursor:pointer;z-index:2;
+  display:flex;align-items:center;justify-content:center;padding-bottom:3px}
+.iv-prev{left:12px}.iv-next{right:12px}
+.iv-count{position:absolute;top:calc(env(safe-area-inset-top) + 16px);left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.55);color:#fff;font-size:13px;font-weight:800;padding:4px 12px;border-radius:20px;z-index:2}
 .msg-meta{font-size:10.5px;font-weight:700;opacity:.65;margin-top:3px}
 .msg-bub.mine .msg-meta{color:#eaf6ff}
 .msg-del{cursor:pointer;text-decoration:underline}

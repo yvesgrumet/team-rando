@@ -1595,29 +1595,49 @@ function msgBubble(m){
     </div>
   </div>`;
 }
-function openImg(id){ const m=CACHE.messages[id]; if(!m||!m.img) return; showZoomViewer(m.img); }
-// Visualiseur plein écran avec zoom (pincement mobile / molette PC / double-tap) + déplacement
-function showZoomViewer(src){
+function openImg(id){
+  const m=CACHE.messages[id]; if(!m||!m.img) return;
+  const list=chanMsgs(chanOf(m)).filter(x=>x.img);
+  let idx=list.findIndex(x=>x.id===id); if(idx<0) idx=0;
+  showZoomViewer(list.map(x=>x.img), idx);
+}
+// Visualiseur plein écran : zoom (pincement / molette / double-tap) + déplacement + défilement entre photos
+function showZoomViewer(items, idx){
+  items=Array.isArray(items)?items:[items]; idx=idx||0; const multi=items.length>1;
   const ov=document.createElement('div'); ov.className='img-viewer';
-  ov.innerHTML=`<button class="iv-close" aria-label="Fermer">✕</button><img class="iv-img" src="${src}" alt="" draggable="false"><div class="iv-hint">Pince ou double-tape pour zoomer</div>`;
+  ov.innerHTML=`<button class="iv-close" aria-label="Fermer">✕</button>
+    ${multi?'<div class="iv-count"></div><button class="iv-nav iv-prev" aria-label="Précédent">‹</button><button class="iv-nav iv-next" aria-label="Suivant">›</button>':''}
+    <img class="iv-img" alt="" draggable="false">
+    <div class="iv-hint">Pince ou double-tape pour zoomer${multi?' · glisse pour changer':''}</div>`;
   document.body.appendChild(ov);
-  const img=ov.querySelector('.iv-img');
+  const img=ov.querySelector('.iv-img'), countEl=ov.querySelector('.iv-count');
   let scale=1, tx=0, ty=0; const MAX=5;
   const apply=()=>{ img.style.transform=`translate(${tx}px,${ty}px) scale(${scale})`; const h=ov.querySelector('.iv-hint'); if(h) h.style.opacity=scale>1?'0':''; };
-  const pts=new Map(); let startDist=0, startScale=1, panStart={x:0,y:0}, isPan=false, lastTap=0;
+  const show=()=>{ img.src=items[idx]; scale=1; tx=0; ty=0; apply(); if(countEl) countEl.textContent=(idx+1)+' / '+items.length; };
+  const go=d=>{ idx=(idx+d+items.length)%items.length; show(); };
+  show();
+  const pts=new Map(); let startDist=0, startScale=1, panStart={x:0,y:0}, isPan=false, lastTap=0, gx=0, gy=0;
   const zoomTo=s=>{ scale=Math.max(1,Math.min(MAX,s)); if(scale<=1){tx=0;ty=0;} apply(); };
   const toggle=(cx,cy)=>{ if(scale>1){ scale=1; tx=0; ty=0; apply(); } else { scale=2.5; const rect=img.getBoundingClientRect(); const ox=cx-(rect.left+rect.width/2), oy=cy-(rect.top+rect.height/2); tx=-ox*1.5; ty=-oy*1.5; apply(); } };
   ov.addEventListener('pointerdown',e=>{ try{ov.setPointerCapture(e.pointerId);}catch(_){}; pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(pts.size===2){ const [a,b]=[...pts.values()]; startDist=Math.hypot(a.x-b.x,a.y-b.y)||1; startScale=scale; }
-    else { isPan=scale>1; panStart={x:e.clientX-tx,y:e.clientY-ty}; } });
+    else { isPan=scale>1; panStart={x:e.clientX-tx,y:e.clientY-ty}; gx=e.clientX; gy=e.clientY; } });
   ov.addEventListener('pointermove',e=>{ if(!pts.has(e.pointerId))return; pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(pts.size===2){ const [a,b]=[...pts.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); scale=Math.max(1,Math.min(MAX,startScale*(d/startDist))); if(scale<=1){tx=0;ty=0;} apply(); }
     else if(isPan){ tx=e.clientX-panStart.x; ty=e.clientY-panStart.y; apply(); } });
-  const up=e=>{ pts.delete(e.pointerId); if(pts.size<2)startScale=scale; if(scale<=1){scale=1;tx=0;ty=0;apply();isPan=false;}
-    const now=Date.now(); if(pts.size===0){ if(now-lastTap<300){ toggle(e.clientX,e.clientY); lastTap=0; } else lastTap=now; } };
+  const up=e=>{ const wasSingle=pts.size===1; pts.delete(e.pointerId); if(pts.size<2)startScale=scale;
+    if(scale<=1){scale=1;tx=0;ty=0;apply();isPan=false;}
+    if(pts.size===0 && wasSingle){ const dx=e.clientX-gx, dy=e.clientY-gy;
+      if(multi && scale<=1 && Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)*1.4){ go(dx<0?1:-1); lastTap=0; }
+      else { const now=Date.now(); if(now-lastTap<300 && Math.abs(dx)<12 && Math.abs(dy)<12){ toggle(e.clientX,e.clientY); lastTap=0; } else lastTap=now; } } };
   ov.addEventListener('pointerup',up); ov.addEventListener('pointercancel',e=>pts.delete(e.pointerId));
   ov.addEventListener('wheel',e=>{ e.preventDefault(); zoomTo(scale + (-e.deltaY*0.0016*scale)); },{passive:false});
-  const close=()=>ov.remove();
+  const prev=ov.querySelector('.iv-prev'), next=ov.querySelector('.iv-next');
+  if(prev) prev.addEventListener('click',e=>{ e.stopPropagation(); go(-1); });
+  if(next) next.addEventListener('click',e=>{ e.stopPropagation(); go(1); });
+  const key=e=>{ if(e.key==='ArrowLeft'){ if(multi) go(-1); } else if(e.key==='ArrowRight'){ if(multi) go(1); } else if(e.key==='Escape') close(); };
+  document.addEventListener('keydown',key);
+  const close=()=>{ document.removeEventListener('keydown',key); ov.remove(); };
   ov.querySelector('.iv-close').addEventListener('click',close);
   ov.addEventListener('click',e=>{ if(e.target===ov && scale<=1) close(); });
 }
