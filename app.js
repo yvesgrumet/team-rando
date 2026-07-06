@@ -1235,7 +1235,7 @@ function siteButtons(r){
   </div>`;
 }
 function mapPatouUrl(r){
-  const base='https://www.pasto-keszako.fr/mappatout-carte/';
+  const base='https://www.pasto-kezako.fr/mappatou-carte/';
   const g=r&&randoCoords(r);
   return g ? base+'#13/'+g.lat.toFixed(4)+'/'+g.lon.toFixed(4) : base; // hash Leaflet: centre sur la zone si les coords du départ sont connues
 }
