@@ -1595,7 +1595,32 @@ function msgBubble(m){
     </div>
   </div>`;
 }
-function openImg(id){ const m=CACHE.messages[id]; if(!m||!m.img) return; openModal(`<img src="${m.img}" style="width:100%;border-radius:14px;display:block"><button class="btn btn-ghost btn-full btn-sm" style="margin-top:12px" onclick="closeModalNow()">Fermer</button>`); }
+function openImg(id){ const m=CACHE.messages[id]; if(!m||!m.img) return; showZoomViewer(m.img); }
+// Visualiseur plein écran avec zoom (pincement mobile / molette PC / double-tap) + déplacement
+function showZoomViewer(src){
+  const ov=document.createElement('div'); ov.className='img-viewer';
+  ov.innerHTML=`<button class="iv-close" aria-label="Fermer">✕</button><img class="iv-img" src="${src}" alt="" draggable="false"><div class="iv-hint">Pince ou double-tape pour zoomer</div>`;
+  document.body.appendChild(ov);
+  const img=ov.querySelector('.iv-img');
+  let scale=1, tx=0, ty=0; const MAX=5;
+  const apply=()=>{ img.style.transform=`translate(${tx}px,${ty}px) scale(${scale})`; const h=ov.querySelector('.iv-hint'); if(h) h.style.opacity=scale>1?'0':''; };
+  const pts=new Map(); let startDist=0, startScale=1, panStart={x:0,y:0}, isPan=false, lastTap=0;
+  const zoomTo=s=>{ scale=Math.max(1,Math.min(MAX,s)); if(scale<=1){tx=0;ty=0;} apply(); };
+  const toggle=(cx,cy)=>{ if(scale>1){ scale=1; tx=0; ty=0; apply(); } else { scale=2.5; const rect=img.getBoundingClientRect(); const ox=cx-(rect.left+rect.width/2), oy=cy-(rect.top+rect.height/2); tx=-ox*1.5; ty=-oy*1.5; apply(); } };
+  ov.addEventListener('pointerdown',e=>{ try{ov.setPointerCapture(e.pointerId);}catch(_){}; pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pts.size===2){ const [a,b]=[...pts.values()]; startDist=Math.hypot(a.x-b.x,a.y-b.y)||1; startScale=scale; }
+    else { isPan=scale>1; panStart={x:e.clientX-tx,y:e.clientY-ty}; } });
+  ov.addEventListener('pointermove',e=>{ if(!pts.has(e.pointerId))return; pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pts.size===2){ const [a,b]=[...pts.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); scale=Math.max(1,Math.min(MAX,startScale*(d/startDist))); if(scale<=1){tx=0;ty=0;} apply(); }
+    else if(isPan){ tx=e.clientX-panStart.x; ty=e.clientY-panStart.y; apply(); } });
+  const up=e=>{ pts.delete(e.pointerId); if(pts.size<2)startScale=scale; if(scale<=1){scale=1;tx=0;ty=0;apply();isPan=false;}
+    const now=Date.now(); if(pts.size===0){ if(now-lastTap<300){ toggle(e.clientX,e.clientY); lastTap=0; } else lastTap=now; } };
+  ov.addEventListener('pointerup',up); ov.addEventListener('pointercancel',e=>pts.delete(e.pointerId));
+  ov.addEventListener('wheel',e=>{ e.preventDefault(); zoomTo(scale + (-e.deltaY*0.0016*scale)); },{passive:false});
+  const close=()=>ov.remove();
+  ov.querySelector('.iv-close').addEventListener('click',close);
+  ov.addEventListener('click',e=>{ if(e.target===ov && scale<=1) close(); });
+}
 function notifyMsg(chan,t){
   const where = chan==='general' ? 'Tchat' : chanTitle(chan).replace(/^\S+\s/,'');
   pushNotifyOthers('💬 '+(ME.prenom||'')+' — '+where, (t||'📷 Photo').slice(0,140), '/');

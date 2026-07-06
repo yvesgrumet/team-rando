@@ -326,6 +326,16 @@ h1,h2,h3,.fred{font-family:'Fredoka',sans-serif;font-weight:600;}
 .msg-txt{font-size:15px;font-weight:600;line-height:1.35;word-break:break-word;white-space:pre-wrap}
 .msg-link{color:var(--sky-d);font-weight:800;text-decoration:underline;word-break:break-all}
 .msg-bub.mine .msg-link{color:#fff}
+.img-viewer{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.93);display:flex;align-items:center;justify-content:center;
+  overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+.img-viewer .iv-img{max-width:100%;max-height:100%;transform-origin:center center;will-change:transform;
+  -webkit-user-drag:none;user-select:none;cursor:zoom-in}
+.iv-close{position:absolute;top:calc(env(safe-area-inset-top) + 12px);right:16px;width:40px;height:40px;border-radius:50%;
+  border:none;background:rgba(255,255,255,.92);font-size:17px;font-weight:900;color:#111;cursor:pointer;z-index:2;
+  display:flex;align-items:center;justify-content:center}
+.iv-hint{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 18px);left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.55);color:#fff;font-size:12.5px;font-weight:700;padding:6px 14px;border-radius:20px;
+  transition:opacity .25s;pointer-events:none}
 .msg-meta{font-size:10.5px;font-weight:700;opacity:.65;margin-top:3px}
 .msg-bub.mine .msg-meta{color:#eaf6ff}
 .msg-del{cursor:pointer;text-decoration:underline}
