@@ -1231,7 +1231,13 @@ function siteButtons(r){
     <a class="sitelink" href="${L.annecy}" target="_blank" rel="noopener"><span class="logo" style="background:var(--orange-d)">🏔️</span> Lac Annecy Aravis Outdoor <span class="arr">↗</span></a>
     <a class="sitelink" href="${mapsUrl(r)}" target="_blank" rel="noopener"><span class="logo" style="background:#1a73e8">📍</span> Itinéraire (Google Maps) <span class="arr">↗</span></a>
     <a class="sitelink" href="${meteoUrl(r)}" target="_blank" rel="noopener"><span class="logo" style="background:#0ea5e9">🌦️</span> Météo montagne (meteoblue) <span class="arr">↗</span></a>
+    <a class="sitelink" href="${mapPatouUrl(r)}" target="_blank" rel="noopener"><span class="logo" style="background:#b45309">🐕</span> Patous / estives (MapPatou) <span class="arr">↗</span></a>
   </div>`;
+}
+function mapPatouUrl(r){
+  const base='https://www.pasto-keszako.fr/mappatout-carte/';
+  const g=r&&randoCoords(r);
+  return g ? base+'#13/'+g.lat.toFixed(4)+'/'+g.lon.toFixed(4) : base; // hash Leaflet: centre sur la zone si les coords du départ sont connues
 }
 
 function openRando(id){
@@ -1553,6 +1559,20 @@ function discList(kind){
     return `<div class="disc-row" onclick="openChan('${chan}','randos')"><div style="min-width:0"><b>${esc(r.nom)}</b><div class="membre-det">${cnt[id]} message${cnt[id]>1?'s':''}</div></div>${u?`<span class="disc-badge">${u}</span>`:'<span class="disc-arr">›</span>'}</div>`;
   }).join('')+'</div>';
 }
+// Transforme les URL d'un texte en liens cliquables (le reste est échappé)
+function linkify(t){
+  const re=/(https?:\/\/[^\s<]+|www\.[^\s<]+)/g;
+  let out='', last=0, m;
+  while((m=re.exec(t))){
+    out+=esc(t.slice(last,m.index));
+    let url=m[0], tail=''; const tr=url.match(/[).,!?;:]+$/); if(tr){ tail=tr[0]; url=url.slice(0,-tail.length); }
+    const href=/^www\./i.test(url)?'https://'+url:url;
+    out+=`<a class="msg-link" href="${esc(href)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${esc(url)}</a>`+esc(tail);
+    last=m.index+m[0].length;
+  }
+  out+=esc(t.slice(last));
+  return out;
+}
 function msgBubble(m){
   const me=m.membreId===(ME&&ME.id);
   const auth=getM(m.membreId);
@@ -1567,7 +1587,7 @@ function msgBubble(m){
       <div class="msg-bub ${me?'mine':''}" onclick="openReact('${m.id}')" title="Appuie pour réagir">
         ${me?'':`<div class="msg-auth">${esc(auth?auth.prenom:'?')}</div>`}
         ${m.img?`<img class="msg-img" src="${m.img}" alt="" onclick="event.stopPropagation();openImg('${m.id}')">`:''}
-        ${m.texte?`<div class="msg-txt">${esc(m.texte)}</div>`:''}
+        ${m.texte?`<div class="msg-txt">${linkify(m.texte)}</div>`:''}
         <div class="msg-meta">${hh}${canDel?` · <span class="msg-del" onclick="event.stopPropagation();supprMessage('${m.id}')">supprimer</span>`:''}</div>
         ${seenTxt}
       </div>
