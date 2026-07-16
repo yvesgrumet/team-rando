@@ -1,0 +1,82 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "config": {
+      ".read": "auth != null",
+      ".write": "auth != null && newData.exists()",
+      "teamPhoto": { ".validate": "!newData.exists() || (newData.isString() && newData.val().length < 3000000)" }
+    },
+
+    "membres": {
+      ".read": "auth != null",
+      ".write": "auth != null && newData.exists()",
+      "$id": {
+        ".write": "auth != null",
+        ".validate": "!newData.exists() || newData.hasChildren(['prenom'])",
+        "prenom":    { ".validate": "newData.isString() && newData.val().length < 60" },
+        "nom":       { ".validate": "!newData.exists() || (newData.isString() && newData.val().length < 60)" },
+        "telephone": { ".validate": "!newData.exists() || (newData.isString() && newData.val().length < 30)" },
+        "photo":     { ".validate": "!newData.exists() || (newData.isString() && newData.val().length < 3000000)" }
+      }
+    },
+
+    "randos": {
+      ".read": "auth != null",
+      ".write": "auth != null && newData.exists()",
+      "$id": { ".write": "auth != null" }
+    },
+
+    "sorties": {
+      ".read": "auth != null",
+      ".write": "auth != null && newData.exists()",
+      "$id": { ".write": "auth != null" }
+    },
+
+    "participations": {
+      ".read": "auth != null",
+      ".write": "auth != null && newData.exists()",
+      "$id": { ".write": "auth != null" }
+    },
+
+    "faites": {
+      ".read": "auth != null",
+      ".write": "auth != null && newData.exists()",
+      "$id": { ".write": "auth != null" }
+    },
+
+    "messages": {
+      ".read": "auth != null",
+      ".write": "auth != null && newData.exists()",
+      "$id": {
+        ".write": "auth != null",
+        ".validate": "!newData.exists() || newData.hasChildren(['membreId','createdAt'])",
+        "texte": { ".validate": "!newData.exists() || (newData.isString() && newData.val().length < 5000)" },
+        "img":   { ".validate": "!newData.exists() || (newData.isString() && newData.val().length < 3000000)" }
+      }
+    },
+
+    "galleries": {
+      ".read": "auth != null",
+      ".write": "auth != null && newData.exists()",
+      "$sid": {
+        ".write": "auth != null",
+        "$pid": {
+          "img": { ".validate": "!newData.exists() || (newData.isString() && newData.val().length < 3000000)" }
+        }
+      }
+    },
+
+    "pushSubs": {
+      ".read": "auth != null",
+      ".write": "auth != null && newData.exists()",
+      "$id": { ".write": "auth != null" }
+    },
+
+    "presence": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+  }
+}

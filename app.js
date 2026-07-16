@@ -525,6 +525,7 @@ function openCreerProfil(){
       </div>
     </div>
     ${first?'<p class="mini-note">🛡️ Tu seras l\'administrateur (1er membre).</p>':''}
+    <p class="mini-note" style="text-align:left">🔒 En créant ton profil, tu acceptes que les membres du groupe voient ton prénom, ta photo et ton téléphone. Tu peux tout supprimer à tout moment dans Réglages.</p>
     <button class="btn btn-full btn-lg" style="margin-top:6px" onclick="creerProfil()">Créer mon profil ✓</button>
     <button class="btn btn-ghost btn-full btn-sm" style="margin-top:8px" onclick="showPicker()">← Retour</button>`;
 }
@@ -1817,6 +1818,11 @@ function renderReglages(){
         Données partagées : ${mode?'<b style="color:var(--green-d)">✅ Firebase (tout le monde voit la même chose)</b>':'<span class="badge-mode">⚠️ Mode local (test, ce téléphone seulement)</span><br>Pour partager avec les amis, configure Firebase (voir INSTALLATION.md).'}
       </p>
     </div>
+    <div class="card">
+      <div class="card-t">🔒 Confidentialité</div>
+      <p class="mini-note" style="text-align:left;padding:0 0 10px">Tes données (prénom, téléphone, date de naissance, photos, messages) restent dans le groupe. Tu peux tout effacer définitivement quand tu veux.</p>
+      <button class="btn btn-danger btn-full btn-sm" onclick="supprMembreTeam('${ME.id}','${jsStr(ME.prenom)}')">🗑️ Supprimer mon profil et toutes mes données</button>
+    </div>
     <div style="padding:4px 14px 0"><button class="btn btn-danger btn-full" onclick="changerProfil()">🔄 Changer de profil</button></div>
     <div style="height:14px"></div>`;
 }
@@ -1865,13 +1871,24 @@ function openGestionMembres(){
     <p class="mini-note" style="text-align:left">⭐ = passer admin · 🗑️ = retirer du groupe</p>`);
 }
 async function supprMembre(id,nom){ if(!confirm('Retirer '+nom+' du groupe ?')) return; await DB.remove('membres/'+id); toast('Membre retiré'); openGestionMembres(); }
+async function purgeMemberData(id){
+  const jobs=[];
+  arr(CACHE.messages).filter(m=>m.membreId===id).forEach(m=>jobs.push(DB.remove('messages/'+m.id)));
+  arr(CACHE.faites).filter(f=>f.membreId===id).forEach(f=>jobs.push(DB.remove('faites/'+f.id)));
+  arr(CACHE.participations).filter(p=>p.membreId===id).forEach(p=>jobs.push(DB.remove('participations/'+p.id)));
+  jobs.push(DB.remove('presence/'+id)); jobs.push(DB.remove('pushSubs/'+id));
+  // photos d'albums ajoutées par la personne
+  try{ const gs=await DB.get('galleries')||{}; Object.entries(gs).forEach(([sid,ph])=>Object.entries(ph||{}).forEach(([pid,p])=>{ if(p&&p.by===id) jobs.push(DB.remove('galleries/'+sid+'/'+pid)); })); }catch(e){}
+  await Promise.all(jobs.map(p=>p.catch(()=>{})));
+  await DB.remove('membres/'+id);
+}
 async function supprMembreTeam(id,prenom){
   const self=id===(ME&&ME.id);
-  if(!confirm((self?'Supprimer TON profil':'Supprimer le profil de '+prenom)+' ?\nC\'est définitif.')) return;
-  await DB.remove('membres/'+id);
-  try{ await DB.remove('pushSubs/'+id); }catch(e){}
+  if(!confirm((self?'Supprimer TON profil et TOUTES tes données (messages, photos, randos faites…)':'Supprimer le profil de '+prenom+' et ses données')+' ?\nC\'est définitif.')) return;
+  toast('Suppression en cours…');
+  await purgeMemberData(id);
   if(self){ localStorage.removeItem('tr_me'); location.reload(); return; }
-  toast('Profil supprimé'); renderMembres();
+  toast('Profil et données supprimés'); renderMembres();
 }
 async function promo(id){ await DB.update('membres/'+id,{isAdmin:true}); toast('Nouveau admin ⭐'); openGestionMembres(); }
 
