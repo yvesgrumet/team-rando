@@ -491,14 +491,14 @@ function pwOk(){
   else showPicker();
 }
 function showPicker(){
-  const ms=arr(CACHE.membres).sort((a,b)=>(a.prenom||'').localeCompare(b.prenom||''));
+  // On ne liste PAS les membres ici : une personne qui n'a pas encore créé son profil
+  // ne doit voir ni les membres, ni les messages. Elle doit créer son profil pour entrer.
+  const first=arr(CACHE.membres).length===0;
   $('profil-card').innerHTML=`
     <div class="ov-emoji">👋</div>
-    <div class="ov-title">Qui es-tu ?</div>
-    <div class="ov-sub">Choisis ton profil ou crée-le</div>
-    <div style="margin:16px 0 8px;text-align:left">
-      ${ms.length?ms.map(m=>`<button class="pick" onclick="choisirProfil('${m.id}')">${avatar(m,46)}<span class="nm">${esc(m.prenom)} ${esc(m.nom||'')}</span></button>`).join(''):'<p class="mini-note">Aucun membre encore. Crée le premier profil 👇</p>'}
-    </div>
+    <div class="ov-title">Bienvenue dans la Team !</div>
+    <div class="ov-sub">Crée ton profil pour accéder à l'appli</div>
+    <p class="mini-note" style="margin:16px 0;text-align:left">Les randos, sorties, messages et les membres ne s'affichent qu'une fois ton profil créé.${first?'<br>🛡️ Tu seras l\'administrateur (1er membre).':''}</p>
     <button class="btn btn-sun btn-full" onclick="openCreerProfil()">➕ Créer mon profil</button>`;
   show('ov-profil');
 }
@@ -1398,7 +1398,7 @@ async function saveRando(id, forSortie){
 let lastMsgKnown=null, lastSortieKnown=null, presenceTimer=null;
 
 const msgsArr = () => arr(CACHE.messages).sort((a,b)=>(a.createdAt||'').localeCompare(b.createdAt||''));
-function unreadMsgCount(){ if(!ME) return 0; return msgsArr().filter(m=>m.membreId!==ME.id && !(m.vu&&m.vu[ME.id])).length; }
+function unreadMsgCount(){ if(!ME||!canReadMsg(ME)) return 0; return msgsArr().filter(m=>m.membreId!==ME.id && !(m.vu&&m.vu[ME.id])).length; }
 
 /* ── Présence (qui est en ligne) ── */
 function onlineMembres(){
@@ -1459,8 +1459,17 @@ function setMTab(tab){ MTAB=tab; MCHAN = lastChanInTab(tab); renderMessages(); }
 function openChan(chan,tab){ closeModalNow(); _forceChan=true; MTAB=tab||MTAB; MCHAN=chan; if(CURRENT!=='messages') navigate('messages'); else { renderMessages(); _forceChan=false; } }
 function backToList(){ MCHAN=null; renderMessages(); }
 
+/* Accès lecture messages : autorisé par défaut, l'admin peut le retirer par personne (canRead:false) */
+const canReadMsg = m => !!(m && (m.isAdmin || m.canRead!==false));
 /* ── Vue Messages ── */
 function renderMessages(){
+  if(!canReadMsg(ME)){
+    $('view-messages').innerHTML=`
+      <div class="phead"><h2>💬 Messages</h2></div>
+      <div class="empty" style="padding-top:50px"><div class="e-ic">🔒</div>
+        <p>L'accès aux messages ne t'a pas encore été autorisé par l'administrateur.<br>Demande-lui de t'ouvrir la messagerie 😉</p></div>`;
+    return;
+  }
   const online=onlineMembres();
   const tabs=[['general','💬 Tchat'],['sorties','📅 Sorties'],['randos','🥾 Randos'],['infos','📢 Infos']];
   const ac=activeChan();
@@ -1648,7 +1657,7 @@ function showZoomViewer(items, idx){
 }
 function notifyMsg(chan,t){
   const where = chan==='general' ? 'Tchat' : chanTitle(chan).replace(/^\S+\s/,'');
-  pushNotifyOthers('💬 '+(ME.prenom||'')+' — '+where, (t||'📷 Photo').slice(0,140), '/');
+  pushNotifyOthers('💬 '+(ME.prenom||'')+' — '+where, (t||'📷 Photo').slice(0,140), '/', {readersOnly:true});
 }
 async function sendMessage(){
   const inp=$('msg-input'); if(!inp) return; const t=inp.value.trim(); if(!t) return;
@@ -1708,10 +1717,14 @@ async function enableNotifs(silent){
   }catch(e){ console.error('enableNotifs',e); if(!silent) toast('Activation impossible','err'); return false; }
 }
 function maybeEnableNotifs(){ if(pushSupported() && Notification.permission==='default') enableNotifs(true); }
-async function pushNotifyOthers(title, body, url){
+async function pushNotifyOthers(title, body, url, opts){
   try{
+    const readersOnly = opts && opts.readersOnly; // pour les messages : ne pas notifier ceux qui n'ont pas l'accès lecture
     const subsObj = await DB.get('pushSubs') || {};
-    const subs = Object.entries(subsObj).filter(([id])=>id!==(ME&&ME.id)).map(([,s])=>s);
+    const subs = Object.entries(subsObj)
+      .filter(([id])=>id!==(ME&&ME.id))
+      .filter(([id])=>!readersOnly || canReadMsg(CACHE.membres[id]))
+      .map(([,s])=>s);
     if(!subs.length) return;
     await fetch('/api/notify', { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ subs, title, body, url: url||'/' }) });
@@ -1729,7 +1742,7 @@ function notifStatusHtml(){
   return '<button class="btn btn-full btn-sm" onclick="enableNotifs()">🔔 Activer les notifications</button>';
 }
 function onMessagesChange(){
-  if(!appReady||!ME){ return; }
+  if(!appReady||!ME||!canReadMsg(ME)){ return; }
   const latest=msgsArr().slice(-1)[0];
   if(lastMsgKnown===null){ lastMsgKnown=latest?latest.id:''; return; }
   if(latest && latest.id!==lastMsgKnown && latest.membreId!==ME.id){
@@ -1864,11 +1877,20 @@ function openCodeGroupe(){
 function openGestionMembres(){
   const ms=arr(CACHE.membres).sort((a,b)=>(a.prenom||'').localeCompare(b.prenom||''));
   openModal(`<h3>👥 Gérer les membres</h3>
-    ${ms.map(m=>`<div class="prow">${avatar(m,38)}
-      <div style="flex:1"><b>${esc(m.prenom)} ${esc(m.nom||'')}</b>${m.isAdmin?' <span class="chip chip-sun" style="font-size:10px">admin</span>':''}</div>
+    ${ms.map(m=>{ const reads=canReadMsg(m); return `<div class="prow">${avatar(m,38)}
+      <div style="flex:1;min-width:0"><b>${esc(m.prenom)} ${esc(m.nom||'')}</b>${m.isAdmin?' <span class="chip chip-sun" style="font-size:10px">admin</span>':''}
+        <div style="margin-top:4px"><span class="fchip ${reads?'on':''}" style="font-size:11px;padding:4px 9px" onclick="toggleReadMsg('${m.id}')">${reads?'💬 Messages ✓':'🔒 Messages ✗'}</span></div>
+      </div>
       ${m.id!==ME.id?`<button class="btn btn-danger btn-sm" onclick="supprMembre('${m.id}','${jsStr(m.prenom)}')">🗑️</button>${!m.isAdmin?`<button class="btn btn-ghost btn-sm" onclick="promo('${m.id}')">⭐</button>`:''}`:'<span style="font-size:12px;color:var(--muted);font-weight:800">moi</span>'}
-    </div>`).join('')}
-    <p class="mini-note" style="text-align:left">⭐ = passer admin · 🗑️ = retirer du groupe</p>`);
+    </div>`; }).join('')}
+    <p class="mini-note" style="text-align:left">💬 = touche pour autoriser/retirer la lecture des messages · ⭐ = passer admin · 🗑️ = retirer du groupe</p>`);
+}
+async function toggleReadMsg(id){
+  const m=CACHE.membres[id]; if(!m) return;
+  if(m.isAdmin){ toast('Un admin a toujours accès'); return; }
+  const now=(m.canRead!==false); // actuellement autorisé ?
+  await DB.update('membres/'+id,{canRead:!now});
+  toast(!now?'Messages autorisés ✓':'Messages bloqués 🔒'); openGestionMembres();
 }
 async function supprMembre(id,nom){ if(!confirm('Retirer '+nom+' du groupe ?')) return; await DB.remove('membres/'+id); toast('Membre retiré'); openGestionMembres(); }
 async function purgeMemberData(id){
