@@ -1740,7 +1740,7 @@ function onSortiesChange(){
   if(!appReady||!ME){ return; }
   const latest=arr(CACHE.sorties).sort((a,b)=>(a.createdAt||'').localeCompare(b.createdAt||'')).slice(-1)[0];
   if(lastSortieKnown===null){ lastSortieKnown=latest?latest.id:''; return; }
-  if(latest && latest.id!==lastSortieKnown && latest.organisateurId!==ME.id){
+  if(latest && latest.id!==lastSortieKnown && latest.organisateurId!==ME.id && (latest.date||'')>=todayStr()){
     const a=getM(latest.organisateurId);
     const msg=(a?a.prenom:'Quelqu\'un')+' propose une sortie le '+fmtShort(latest.date);
     if(CURRENT!=='sorties'){ toast('📅 '+msg); notify('Team Rando — nouvelle sortie', msg); }
