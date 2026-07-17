@@ -1027,7 +1027,10 @@ function renderRandos(){
         ${massifs.map(m=>`<option value="${esc(m)}" ${RF.massif===m?'selected':''}>${esc(m)} (${counts[m]})</option>`).join('')}
       </select>
     </div>
-    <button class="btn btn-soft btn-full btn-sm" style="margin:0 14px" onclick="openCarteMassifs()">🗺️ Carte des massifs</button>
+    <div style="display:flex;gap:8px;margin:0 14px">
+      <button class="btn btn-soft btn-sm" style="flex:1" onclick="openCarteMassifs()">🗺️ Carte</button>
+      <button class="btn btn-soft btn-sm" style="flex:1" onclick="openTop10()">🏆 Top 10</button>
+    </div>
     <div class="filters">
       ${[['','Toutes'],['30','🚗 ≤30min'],['60','≤1h'],['90','≤1h30'],['150','≤2h30']].map(([v,l])=>`<span class="fchip ${(''+(RF.voiture||''))===v?'on':''}" onclick="setRF('voiture','${v}')">${l}</span>`).join('')}
       <span class="fchip ${RF.todo?'on':''}" onclick="toggleRF('todo')">✨ Pas encore faites</span>
@@ -1129,6 +1132,32 @@ function openCarteMassifs(){
   openModal(`<h3>🗺️ Carte des massifs</h3>
     <p class="mini-note" style="text-align:left;padding:0 0 10px">Les massifs à ≤ 2h30 de <b>Nantua</b> 📍, avec leurs <b>limites</b>, façon carte géologique des Alpes. Points noirs = villes repères, taches bleues = lacs (Léman, Bourget, Annecy).</p>
     ${svg}`);
+}
+/* Top 10 des incontournables (sélection réputée sur les sites de rando, pas les avis de la team) */
+const TOP10=[
+  {nom:"Lac Blanc (Aiguilles Rouges)", why:"LA carte postale du Mont-Blanc, face au massif et aux Drus."},
+  {nom:"La Tournette", why:"Le géant qui domine le lac d'Annecy — panorama à 360°."},
+  {nom:"Pointe Percée (sommet des Aravis, 2750 m)", why:"Le toit des Aravis, un grand classique alpin."},
+  {nom:"Le Mont Buet (3096 m)", why:"Le « Mont Blanc des Dames », vue immense sur les glaciers."},
+  {nom:"Le Grand Veymont (2341 m)", why:"Le sommet du Vercors et ses Hauts-Plateaux sauvages."},
+  {nom:"Lac de Presset & Pierra Menta", why:"Lac turquoise sous la mythique Pierra Menta (Beaufortain)."},
+  {nom:"Le Lac des Vaches & le Lac Long", why:"Le fameux passage sur dalles au cœur de la Vanoise."},
+  {nom:"Les Cornettes de Bise", why:"Sommet-panorama du Chablais, entre lacs et Léman."},
+  {nom:"Cascades du Hérisson", why:"Les plus belles cascades du Jura, accessibles à tous."},
+  {nom:"Le Grand Colombier", why:"Le balcon du Bugey sur le Rhône et les Alpes — tout près de chez nous."}
+];
+function openTop10(){
+  const medal=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':'<b style="color:var(--muted)">'+(i+1)+'.</b>';
+  const rows=TOP10.map((t,i)=>{ const r=arr(CACHE.randos).find(x=>(x.nom||'')===t.nom);
+    const meta=r?[r.massif||r.region, r.difficulte, r.temps_voiture_min!=null?'🚗 '+fmtVoiture(r.temps_voiture_min):'', isBivouac(r)?'🏕️ 2j':''].filter(Boolean).join(' · '):'';
+    return `<div class="disc-row"${r?` onclick="closeModalNow();openRando('${r.id}')"`:' style="cursor:default"'}>
+      <div style="min-width:0"><b>${medal(i)} ${esc(t.nom)}</b>
+        <div class="membre-det">${esc(t.why)}</div>
+        ${meta?`<div class="membre-det" style="margin-top:2px">${meta}</div>`:''}
+      </div>${r?'<span class="disc-arr">›</span>':''}</div>`; }).join('');
+  openModal(`<h3>🏆 Top 10 incontournables</h3>
+    <p class="mini-note" style="text-align:left;padding:0 0 10px">Les randos <b>mythiques</b> de la région, parmi les mieux notées sur les sites de rando — à faire au moins une fois dans sa vie ✨</p>
+    ${rows}`);
 }
 function majSearch(v){ RF.q=v; clearTimeout(window._st); window._st=setTimeout(runSearch,400); }
 async function runSearch(){
