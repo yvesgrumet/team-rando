@@ -1029,7 +1029,7 @@ function renderRandos(){
     </div>
     <div style="display:flex;gap:8px;margin:0 14px">
       <button class="btn btn-soft btn-sm" style="flex:1" onclick="openCarteMassifs()">🗺️ Carte</button>
-      <button class="btn btn-soft btn-sm" style="flex:1" onclick="openTop10()">🏆 Top 10</button>
+      <button class="btn btn-soft btn-sm" style="flex:1" onclick="openTop10()">🏆 Top 20</button>
     </div>
     <div class="filters">
       ${[['','Toutes'],['30','🚗 ≤30min'],['60','≤1h'],['90','≤1h30'],['150','≤2h30']].map(([v,l])=>`<span class="fchip ${(''+(RF.voiture||''))===v?'on':''}" onclick="setRF('voiture','${v}')">${l}</span>`).join('')}
@@ -1133,18 +1133,28 @@ function openCarteMassifs(){
     <p class="mini-note" style="text-align:left;padding:0 0 10px">Les massifs à ≤ 2h30 de <b>Nantua</b> 📍, avec leurs <b>limites</b>, façon carte géologique des Alpes. Points noirs = villes repères, taches bleues = lacs (Léman, Bourget, Annecy).</p>
     ${svg}`);
 }
-/* Top 10 des incontournables (sélection réputée sur les sites de rando, pas les avis de la team) */
+/* Top 20 des incontournables DIFFICILES (grands sommets réputés sur les sites de rando) */
 const TOP10=[
-  {nom:"Lac Blanc (Aiguilles Rouges)", why:"LA carte postale du Mont-Blanc, face au massif et aux Drus."},
-  {nom:"La Tournette", why:"Le géant qui domine le lac d'Annecy — panorama à 360°."},
-  {nom:"Pointe Percée (sommet des Aravis, 2750 m)", why:"Le toit des Aravis, un grand classique alpin."},
-  {nom:"Le Mont Buet (3096 m)", why:"Le « Mont Blanc des Dames », vue immense sur les glaciers."},
-  {nom:"Le Grand Veymont (2341 m)", why:"Le sommet du Vercors et ses Hauts-Plateaux sauvages."},
-  {nom:"Lac de Presset & Pierra Menta", why:"Lac turquoise sous la mythique Pierra Menta (Beaufortain)."},
-  {nom:"Le Lac des Vaches & le Lac Long", why:"Le fameux passage sur dalles au cœur de la Vanoise."},
-  {nom:"Les Cornettes de Bise", why:"Sommet-panorama du Chablais, entre lacs et Léman."},
-  {nom:"Cascades du Hérisson", why:"Les plus belles cascades du Jura, accessibles à tous."},
-  {nom:"Le Grand Colombier", why:"Le balcon du Bugey sur le Rhône et les Alpes — tout près de chez nous."}
+  {nom:"La Tournette", why:"Le géant qui domine le lac d'Annecy — passages câblés au sommet."},
+  {nom:"Pointe Percée (sommet des Aravis, 2750 m)", why:"Le toit des Aravis, grande course alpine."},
+  {nom:"Le Mont Buet (3096 m)", why:"Le « Mont Blanc des Dames », 1700 m de dénivelé et vue immense."},
+  {nom:"La Jonction (glacier des Bossons)", why:"Montée raide au plus près des séracs du Mont-Blanc."},
+  {nom:"La Croix de Belledonne (2926 m)", why:"Le sommet emblématique de Belledonne, final aérien."},
+  {nom:"La Dent Parrachée (versant Aussois)", why:"Un des grands 3000 accessibles de la Vanoise."},
+  {nom:"Le Grand Bec par le Ritord", why:"Sommet-belvédère sauvage au cœur de la Vanoise."},
+  {nom:"L'Aiguille de la Grande Sassière (3747 m)", why:"Un 3700 en rando, panorama sur toute la Tarentaise."},
+  {nom:"La Dent d'Oche", why:"Sommet iconique du Chablais dressé au-dessus du Léman."},
+  {nom:"Les Cornettes de Bise", why:"Grand sommet-panorama du Chablais, entre lacs et Léman."},
+  {nom:"Le Roc d'Enfer", why:"Le point culminant du Chablais, ambiance sauvage."},
+  {nom:"Le Grand Veymont (2341 m)", why:"Le sommet du Vercors et ses Hauts-Plateaux."},
+  {nom:"La Grande Moucherolle", why:"Sommet raide au-dessus de Villard-de-Lans (Vercors)."},
+  {nom:"Le Grand Colon", why:"Belvédère de Belledonne face à la chaîne."},
+  {nom:"Le Mont Joly", why:"Le plus beau balcon face au Mont-Blanc (Saint-Gervais)."},
+  {nom:"Le Désert de Platé", why:"Grand lapiaz d'altitude face au Mont-Blanc (Flaine)."},
+  {nom:"Le Grand Pic de la Lauzière (2829 m)", why:"Le sommet-roi du méconnu massif de la Lauzière."},
+  {nom:"Le Mont Mirantin", why:"1300 m de montée et panorama complet sur le Beaufortain."},
+  {nom:"Dent de Crolles", why:"Le grand classique de Chartreuse, plateau et lapiaz."},
+  {nom:"Le Grand Colombier", why:"Le sommet-balcon du Bugey — le plus proche de chez nous."}
 ];
 function openTop10(){
   const medal=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':'<b style="color:var(--muted)">'+(i+1)+'.</b>';
@@ -1155,8 +1165,8 @@ function openTop10(){
         <div class="membre-det">${esc(t.why)}</div>
         ${meta?`<div class="membre-det" style="margin-top:2px">${meta}</div>`:''}
       </div>${r?'<span class="disc-arr">›</span>':''}</div>`; }).join('');
-  openModal(`<h3>🏆 Top 10 incontournables</h3>
-    <p class="mini-note" style="text-align:left;padding:0 0 10px">Les randos <b>mythiques</b> de la région, parmi les mieux notées sur les sites de rando — à faire au moins une fois dans sa vie ✨</p>
+  openModal(`<h3>🏆 Top 20 des grands sommets</h3>
+    <p class="mini-note" style="text-align:left;padding:0 0 10px">Les randos <b>difficiles mythiques</b> de la région (sommets 🎯 Difficile / Très difficile), parmi les plus réputées sur les sites de rando — à faire au moins une fois dans sa vie ✨</p>
     ${rows}`);
 }
 function majSearch(v){ RF.q=v; clearTimeout(window._st); window._st=setTimeout(runSearch,400); }
