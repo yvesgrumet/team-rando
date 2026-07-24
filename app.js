@@ -490,19 +490,36 @@ function submitPw(){
 }
 function pwOk(){
   const id=localStorage.getItem('tr_me');
-  if(id && CACHE.membres[id]){ ME={id, ...CACHE.membres[id]}; enterApp(); }
+  if(id && CACHE.membres[id]){ ME={id, ...CACHE.membres[id]}; enterApp(); return; }
+  // Déjà venu sur ce téléphone (tr_me présent) mais profil non retrouvé instantanément
+  // → on propose de retrouver son profil (ne pas le désinscrire de force).
+  if(id) showExistingProfiles();
   else showPicker();
 }
 function showPicker(){
-  // On ne liste PAS les membres ici : une personne qui n'a pas encore créé son profil
-  // ne doit voir ni les membres, ni les messages. Elle doit créer son profil pour entrer.
+  // Vrai nouveau venu (jamais entré ici) : on ne liste PAS les membres → il crée son profil.
   const first=arr(CACHE.membres).length===0;
   $('profil-card').innerHTML=`
     <div class="ov-emoji">👋</div>
     <div class="ov-title">Bienvenue dans la Team !</div>
     <div class="ov-sub">Crée ton profil pour accéder à l'appli</div>
     <p class="mini-note" style="margin:16px 0;text-align:left">Les randos, sorties, messages et les membres ne s'affichent qu'une fois ton profil créé.${first?'<br>🛡️ Tu seras l\'administrateur (1er membre).':''}</p>
-    <button class="btn btn-sun btn-full" onclick="openCreerProfil()">➕ Créer mon profil</button>`;
+    <button class="btn btn-sun btn-full" onclick="openCreerProfil()">➕ Créer mon profil</button>
+    ${!first?`<button class="btn btn-ghost btn-full btn-sm" style="margin-top:8px" onclick="showExistingProfiles()">J'ai déjà un profil ici</button>`:''}`;
+  show('ov-profil');
+}
+function showExistingProfiles(){
+  const ms=arr(CACHE.membres).sort((a,b)=>(a.prenom||'').localeCompare(b.prenom||''));
+  if(!ms.length){ showPicker(); return; }
+  $('profil-card').innerHTML=`
+    <div class="ov-emoji">👋</div>
+    <div class="ov-title">Qui es-tu ?</div>
+    <div class="ov-sub">Retrouve ton profil</div>
+    <div style="margin:16px 0 8px;text-align:left">
+      ${ms.map(m=>`<button class="pick" onclick="choisirProfil('${m.id}')">${avatar(m,46)}<span class="nm">${esc(m.prenom)} ${esc(m.nom||'')}</span></button>`).join('')}
+    </div>
+    <button class="btn btn-sun btn-full btn-sm" onclick="openCreerProfil()">➕ Créer un nouveau profil</button>
+    <button class="btn btn-ghost btn-full btn-sm" style="margin-top:8px" onclick="showPicker()">← Retour</button>`;
   show('ov-profil');
 }
 function choisirProfil(id){ localStorage.setItem('tr_me',id); ME={id, ...CACHE.membres[id]}; hide('ov-profil'); enterApp(); }
@@ -1959,7 +1976,7 @@ async function promo(id){ await DB.update('membres/'+id,{isAdmin:true}); toast('
 /* ════════════════════════════════  START  ════════════════════════════════ */
 window.submitPw=submitPw; window.navigate=navigate; window.closeModal=closeModal;
 window.choisirProfil=choisirProfil; window.openCreerProfil=openCreerProfil;
-window.showPicker=showPicker; window.npPhoto=npPhoto; window.creerProfil=creerProfil;
+window.showPicker=showPicker; window.showExistingProfiles=showExistingProfiles; window.npPhoto=npPhoto; window.creerProfil=creerProfil;
 window.fmtDateInput=fmtDateInput;
 window.reglerTeamPhoto=reglerTeamPhoto;
 window.openSortie=openSortie; window.openCreerSortie=openCreerSortie; window.creerSortie=creerSortie; window.creerSortieDate=creerSortieDate;
