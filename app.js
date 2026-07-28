@@ -1042,23 +1042,34 @@ function choosePick(rid){ const cb=_pickCb; _pickCb=null; if(cb) cb(rid); }
 
 /* ════════════════════════════════  RANDOS  ════════════════════════════════ */
 let RF={};   // filtres randos
+const SUD_MASSIFS=['Estérel','Maures','Sainte-Baume','Préalpes d\'Azur','Verdon','Mercantour'];
+const isSud = r => SUD_MASSIFS.includes(r.massif||r.region||'');
+const inZone = (r,zone) => zone==='sud' ? isSud(r) : !isSud(r);
+function setZone(z){ RF={zone:z}; renderRandos(); } // change de région → repart des filtres à zéro
 function renderRandos(){
   pregeocodeTowns();
-  const counts={}; arr(CACHE.randos).forEach(r=>{ const m=r.massif||r.region; if(m) counts[m]=(counts[m]||0)+1; });
+  const zone = RF.zone==='sud'?'sud':'nord';
+  const counts={}; arr(CACHE.randos).forEach(r=>{ if(!inZone(r,zone))return; const m=r.massif||r.region; if(m) counts[m]=(counts[m]||0)+1; });
   const massifs=Object.keys(counts).sort();
+  const total=arr(CACHE.randos).filter(r=>inZone(r,zone)).length;
+  const origin = zone==='sud' ? '≤ 2h de Fréjus' : '≤ 2h30 de Nantua';
   $('view-randos').innerHTML=`
-    <div class="phead"><div class="phead-row"><div><h2>🥾 Randos</h2><div class="sub">${arr(CACHE.randos).length} randos à ≤ 2h30 de Nantua</div></div>
+    <div class="phead"><div class="phead-row"><div><h2>🥾 Randos</h2><div class="sub">${total} randos · ${origin}</div></div>
       <button class="btn btn-sun btn-sm" onclick="openCreerRando()">+ Ajouter</button></div></div>
+    <div class="filters" style="justify-content:center;gap:8px;padding:8px 14px 2px">
+      <span class="fchip ${zone==='nord'?'on':''}" style="flex:1;text-align:center" onclick="setZone('nord')">⛰️ Nantua</span>
+      <span class="fchip ${zone==='sud'?'on':''}" style="flex:1;text-align:center" onclick="setZone('sud')">🌊 Sud (Fréjus)</span>
+    </div>
     <div class="searchbar"><div class="search-in">🔍<input id="r-search" placeholder="Chercher une rando, un lieu…" value="${esc(RF.q||'')}" oninput="majSearch(this.value)"></div>
       <select class="massif-select" onchange="setRF('massif',this.value)">
-        <option value="">⛰️ Tous les massifs</option>
+        <option value="">⛰️ Tous les massifs${zone==='sud'?' du Sud':''}</option>
         ${massifs.map(m=>`<option value="${esc(m)}" ${RF.massif===m?'selected':''}>${esc(m)} (${counts[m]})</option>`).join('')}
       </select>
     </div>
-    <div style="display:flex;gap:8px;margin:0 14px">
+    ${zone==='sud' ? `<p class="mini-note" style="text-align:left;padding:4px 16px 0">🌊 Randos du Sud (autour de Fréjus) — le <b>temps de route est calculé depuis Fréjus</b>.</p>` : `<div style="display:flex;gap:8px;margin:0 14px">
       <button class="btn btn-soft btn-sm" style="flex:1" onclick="openCarteMassifs()">🗺️ Carte</button>
       <button class="btn btn-soft btn-sm" style="flex:1" onclick="openTop10()">🏆 Top 20</button>
-    </div>
+    </div>`}
     <div class="filters">
       ${[['','Toutes'],['30','🚗 ≤30min'],['60','≤1h'],['90','≤1h30'],['150','≤2h30']].map(([v,l])=>`<span class="fchip ${(''+(RF.voiture||''))===v?'on':''}" onclick="setRF('voiture','${v}')">${l}</span>`).join('')}
       <span class="fchip ${RF.todo?'on':''}" onclick="toggleRF('todo')">✨ Pas encore faites</span>
@@ -1216,11 +1227,12 @@ function toggleRF(k){ if(RF[k])delete RF[k]; else { RF[k]=1; if(k==='todo')delet
 function goMesFaites(){ RF={done:1}; navigate('randos'); }
 function drawRandos(){
   const el=$('rando-list'); if(!el) return;
+  const zone = RF.zone==='sud'?'sud':'nord';
   const nearMode=!!RF.near;
   let list, count;
   if(nearMode){
     const radiusKm = RF.voiture ? Math.round(+RF.voiture*0.9) : 30;
-    list=arr(CACHE.randos).map(r=>{ const g=randoCoords(r); return {...r,_dist:g?haversineKm(RF.near.lat,RF.near.lon,g.lat,g.lon):null}; })
+    list=arr(CACHE.randos).filter(r=>inZone(r,zone)).map(r=>{ const g=randoCoords(r); return {...r,_dist:g?haversineKm(RF.near.lat,RF.near.lon,g.lat,g.lon):null}; })
       .filter(r=>r._dist!=null && r._dist<=radiusKm);
     if(RF.massif) list=list.filter(r=>(r.massif||r.region)===RF.massif);
     if(RF.diff) list=list.filter(r=>r.difficulte===RF.diff);
@@ -1230,7 +1242,7 @@ function drawRandos(){
     list.sort((a,b)=>a._dist-b._dist);
     count=`<div class="rando-count">📍 ${list.length} rando${list.length>1?'s':''} autour ${dePrefix(RF.near.name)}<b>${esc(RF.near.name)}</b> (≈ ${radiusKm} km${RF.voiture?'':' / 30 min'})${pregeoDone?'':' · calcul des distances…'}</div>`;
   } else {
-    list=arr(CACHE.randos);
+    list=arr(CACHE.randos).filter(r=>inZone(r,zone));
     if(RF.q){ const q=RF.q.toLowerCase(); list=list.filter(r=>(r.nom+' '+(r.depart||'')+' '+(r.massif||r.region||'')+' '+(r.paysage||'')).toLowerCase().includes(q)); }
     if(RF.massif) list=list.filter(r=>(r.massif||r.region)===RF.massif);
     if(RF.voiture) list=list.filter(r=>(r.temps_voiture_min||999)<=+RF.voiture);
