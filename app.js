@@ -508,10 +508,9 @@ function submitPw(){
 function pwOk(){
   const id=localStorage.getItem('tr_me');
   if(id && CACHE.membres[id]){ ME={id, ...CACHE.membres[id]}; enterApp(); return; }
-  // Déjà venu sur ce téléphone (tr_me présent) mais profil non retrouvé instantanément
-  // → on propose de retrouver son profil (ne pas le désinscrire de force).
-  if(id) showExistingProfiles();
-  else showPicker();
+  // Pas reconnu → on montre TOUJOURS la liste des profils pour se reconnecter d'un tap
+  // (recréer un profil doit rester exceptionnel). Si le groupe est vide → création.
+  showExistingProfiles();
 }
 function showPicker(){
   // Vrai nouveau venu (jamais entré ici) : on ne liste PAS les membres → il crée son profil.
@@ -531,12 +530,12 @@ function showExistingProfiles(){
   $('profil-card').innerHTML=`
     <div class="ov-emoji">👋</div>
     <div class="ov-title">Qui es-tu ?</div>
-    <div class="ov-sub">Retrouve ton profil</div>
+    <div class="ov-sub">Touche ton profil pour te reconnecter</div>
     <div style="margin:16px 0 8px;text-align:left">
       ${ms.map(m=>`<button class="pick" onclick="choisirProfil('${m.id}')">${avatar(m,46)}<span class="nm">${esc(m.prenom)} ${esc(m.nom||'')}</span></button>`).join('')}
     </div>
-    <button class="btn btn-sun btn-full btn-sm" onclick="openCreerProfil()">➕ Créer un nouveau profil</button>
-    <button class="btn btn-ghost btn-full btn-sm" style="margin-top:8px" onclick="showPicker()">← Retour</button>`;
+    <p class="mini-note" style="text-align:left">👆 Retrouve-toi dans la liste — <b>ne crée un nouveau profil que si tu n'y es pas</b> (sinon tu auras un doublon).</p>
+    <button class="btn btn-ghost btn-full btn-sm" style="margin-top:6px" onclick="openCreerProfil()">➕ Je ne suis pas dans la liste — créer mon profil</button>`;
   show('ov-profil');
 }
 function choisirProfil(id){ localStorage.setItem('tr_me',id); ME={id, ...CACHE.membres[id]}; hide('ov-profil'); enterApp(); }
