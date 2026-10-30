@@ -1685,11 +1685,22 @@ function linkify(t){
   out+=esc(t.slice(last));
   return out;
 }
+// Date d'un message : « Aujourd'hui », « Hier », sinon « mar. 28/10 » (+ année si différente)
+function msgDay(t){
+  const d0=new Date(); d0.setHours(0,0,0,0);
+  const d=new Date(t); d.setHours(0,0,0,0);
+  const diff=Math.round((d0-d)/86400000);
+  if(diff===0) return "Aujourd'hui";
+  if(diff===1) return 'Hier';
+  const j=['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'][t.getDay()];
+  const dd=`${String(t.getDate()).padStart(2,'0')}/${String(t.getMonth()+1).padStart(2,'0')}`;
+  return `${j} ${dd}${t.getFullYear()!==d0.getFullYear()?'/'+t.getFullYear():''}`;
+}
 function msgBubble(m){
   const me=m.membreId===(ME&&ME.id);
   const auth=getM(m.membreId);
   const t=new Date(m.createdAt);
-  const hh=isNaN(t.getTime())?'':`${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
+  const hh=isNaN(t.getTime())?'':`${msgDay(t)} ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
   const seers=Object.keys(m.vu||{}).filter(id=>id!==m.membreId).map(id=>getM(id)).filter(Boolean);
   const seenTxt=me&&seers.length?`<div class="msg-seen">✓ Vu par ${seers.map(s=>esc(s.prenom)).join(', ')}</div>`:'';
   const canDel=me||(ME&&ME.isAdmin);
